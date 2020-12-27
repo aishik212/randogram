@@ -331,6 +331,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "901264131276-3d4b9pohv55vpj0ddcfiqk0f3pau7mr9.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.textsdev.randogram",
+            "certificate_hash": "5c628b41fffd5aeb36e819aac5e22ea253b863e2"
+          }
+        },
+        {
           "client_id": "901264131276-ninfofd4djr5vl7bbl2a4cl03s5g0e4n.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
