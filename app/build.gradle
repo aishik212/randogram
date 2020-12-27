@@ -59,7 +59,6 @@ dependencies {
     implementation 'de.hdodenhof:circleimageview:3.1.0'
 
     //External Libraries
-
     implementation "androidx.fragment:fragment-ktx:1.2.5"
 
     //Design

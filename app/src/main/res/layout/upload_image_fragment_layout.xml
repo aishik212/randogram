@@ -27,14 +27,14 @@
             android:layout_height="0dp"
             android:padding="50dp"
             android:scaleType="fitCenter"
-            app:layout_constraintBottom_toTopOf="@+id/linearLayout"
+            app:layout_constraintBottom_toTopOf="@+id/upload_ll"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView4"
             app:srcCompat="@drawable/ic_baseline_cloud_upload_24" />
 
         <LinearLayout
-            android:id="@+id/linearLayout"
+            android:id="@+id/upload_ll"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
@@ -69,6 +69,38 @@
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/textView" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/upload_ll_2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/upload_image_button"
+                style="@style/TextAppearance.App.Button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:layout_weight="1"
+                android:text="Upload Image"
+                app:icon="@drawable/ic_baseline_cloud_upload_24"
+                app:iconTint="@color/primaryTextColor" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/cancel_image_button"
+                style="@style/TextAppearance.App.Button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="2dp"
+                android:text="Cancel"
+                app:icon="@drawable/ic_baseline_cancel_24"
+                app:iconTint="@android:color/holo_red_dark" />
+
         </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>

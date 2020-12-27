@@ -29,18 +29,19 @@
         app:layout_constraintTop_toTopOf="parent" />
 
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/glogin"
+        style="@style/TextAppearance.App.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
         android:background="@drawable/gradient_border_button"
-        android:padding="5dp"
-        android:text="Login Via Google"
+        android:padding="15dp"
+        android:text="@string/login_via_google"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/space2" />
+        app:layout_constraintTop_toBottomOf="@+id/textView2" />
 
     <TextView
         android:id="@+id/alogin"
@@ -49,20 +50,10 @@
         android:layout_margin="5dp"
         android:background="@drawable/button_bg"
         android:padding="5dp"
-        android:text="Skip Login"
+        android:text="@string/skip_login"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/glogin" />
-
-    <Button
-        android:id="@+id/signout"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:background="@drawable/button_bg"
-        android:text="Sign Out"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>

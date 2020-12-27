@@ -44,39 +44,31 @@ class Login : AppCompatActivity() {
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
         alogin.setOnClickListener {
-            startSignupLogin(null,this)
-        }
-
-        signout.setOnClickListener {
-            try {
-                auth.signOut()
-            }catch (e :Exception)
-            {
-                Log.d("texts", "onCreate: "+e.localizedMessage)
-            }
-            val i = Intent(this,MainActivity::class.java)
-            i.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
-            startA(this,i)
+            FirebaseAuth.getInstance().signInAnonymously()
+                .addOnCompleteListener { task ->
+                    if (task.isSuccessful) {
+                        startSignupLogin(FirebaseAuth.getInstance().currentUser, this)
+                    } else {
+                        Toast.makeText(this, "Sign In Failed", Toast.LENGTH_SHORT).show()
+                    }
+                }
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        // Result returned from launching the Intent from GoogleSignInApi.getSignInIntent(...);
         if (requestCode == RC_SIGN_IN) {
             val task = GoogleSignIn.getSignedInAccountFromIntent(data)
             try {
-                // Google Sign In was successful, authenticate with Firebase
                 val account = task.getResult(ApiException::class.java)!!
                 firebaseAuthWithGoogle(account.idToken!!)
             } catch (e: Exception) {
-                Log.d("texts", "onActivityResult: "+e.localizedMessage)
-                // Google Sign In failed, update UI appropriately
+                Log.d("texts", "onActivityResult: " + e.localizedMessage)
 
             }
         }
     }
+
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
         auth = Firebase.auth
@@ -84,9 +76,9 @@ class Login : AppCompatActivity() {
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
                     val currentUser = auth.currentUser
-                    if(currentUser != null)
-                    {
-                        Toast.makeText(applicationContext, "Login Successful", Toast.LENGTH_SHORT).show()
+                    if (currentUser != null) {
+                        Toast.makeText(applicationContext, "Login Successful", Toast.LENGTH_SHORT)
+                            .show()
                         startSignupLogin(currentUser, this)
                     }
                 } else {
@@ -94,29 +86,30 @@ class Login : AppCompatActivity() {
                 }
             }
     }
+
     companion object {
         private const val RC_SIGN_IN = 9001
         fun startSignupLogin(currentUser: FirebaseUser?, activity: Activity) {
-            if(currentUser != null)
-            {
-                val ref = getDBRef(activity,"users")
-                val userMap : HashMap<String, Any> = hashMapOf()
-                userMap["email"] = currentUser.email+""
-                userMap["name"] = currentUser.displayName+""
-                userMap["image"] = currentUser.photoUrl.toString()
-                ref.child(currentUser.uid).setValue(userMap).addOnCompleteListener {
-                    if(it.isSuccessful)
-                    {
-                        goToMainScreen(activity, "Welcome " + currentUser.displayName)
-                    }else
-                    {
+            if (currentUser != null) {
+                if (currentUser.isAnonymous) {
+                    goToMainScreen(activity, "Welcome")
+                } else {
+                    val ref = getDBRef(activity, "users")
+                    val userMap: HashMap<String, Any> = hashMapOf()
+                    userMap["email"] = currentUser.email + ""
+                    userMap["name"] = currentUser.displayName + ""
+                    userMap["image"] = currentUser.photoUrl.toString()
+                    ref.child(currentUser.uid).setValue(userMap).addOnCompleteListener {
+                        if (it.isSuccessful) {
+                            goToMainScreen(activity, "Welcome " + currentUser.displayName)
+                        } else {
+                            Toast.makeText(activity, "Login Failed", Toast.LENGTH_SHORT).show()
+                        }
+                    }.addOnFailureListener {
                         Toast.makeText(activity, "Login Failed", Toast.LENGTH_SHORT).show()
                     }
-                }.addOnFailureListener {
-                    Toast.makeText(activity, "Login Failed", Toast.LENGTH_SHORT).show()
                 }
-            }else
-            {
+            } else {
                 goToMainScreen(activity, "Welcome Anonymous User")
             }
         }
@@ -126,8 +119,8 @@ class Login : AppCompatActivity() {
             s: String
         ) {
             Toast.makeText(activity, s, Toast.LENGTH_SHORT).show()
-            val i = Intent(activity,Homescreen::class.java)
-            startA(activity,i)
+            val i = Intent(activity, Homescreen::class.java)
+            startA(activity, i)
         }
     }
 }

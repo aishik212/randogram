@@ -1,10 +1,12 @@
 package com.textsdev.randogram
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.viewpager2.widget.ViewPager2
@@ -48,6 +50,7 @@ class Homescreen : AppCompatActivity() {
     }
 
     private fun continueApp(currentUser: FirebaseUser) {
+        Log.d("texts", "continueApp: " + currentUser.uid)
         setDP(currentUser)
         initNavigation()
     }
@@ -101,6 +104,46 @@ class Homescreen : AppCompatActivity() {
 
         }
     }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == 100) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
+                Toast.makeText(
+                    this,
+                    "Camera Permission Granted Please try Again",
+                    Toast.LENGTH_SHORT
+                ).show();
+            } else {
+                Toast.makeText(
+                    this,
+                    "Camera Permission Denied",
+                    Toast.LENGTH_SHORT
+                ).show();
+            }
+        } else if (requestCode == 101) {
+            if (grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED
+            ) {
+                Toast.makeText(
+                    this,
+                    "File Permission Granted Please try Again",
+                    Toast.LENGTH_SHORT
+                ).show();
+            } else {
+                Toast.makeText(
+                    this,
+                    "File Permission Denied",
+                    Toast.LENGTH_SHORT
+                ).show();
+            }
+        }
+    }
+
 
     companion object {
         const val SELECT_IMAGE = 548
