@@ -13,16 +13,25 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ServerValue
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.storage.ktx.storage
 import com.textsdev.randogram.Homescreen.Companion.SELECT_GALLERY
 import com.textsdev.randogram.Homescreen.Companion.SELECT_IMAGE
+import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
+import com.textsdev.randogram.fragments.HomeFragment.Companion.fetchData
+import kotlinx.android.synthetic.main.home_layout.*
 import kotlinx.android.synthetic.main.upload_image_fragment_layout.*
 import java.io.*
 
@@ -40,6 +49,7 @@ class UploadImageFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         uploadLl = upload_ll
         uploadL2 = upload_ll_2
+        upload_btn = upload_image_button
         showUploadOptions()
     }
 
@@ -70,15 +80,10 @@ class UploadImageFragment : Fragment() {
         }
 
         cancel_image_button.setOnClickListener {
-            showUploadOptions()
-            Glide.with(requireActivity()).load(
-                ContextCompat.getDrawable(
-                    requireContext(),
-                    R.drawable.ic_baseline_cloud_upload_24
-                )
-            ).centerInside().into(image_viewer)
+            resetUploadPage(requireActivity())
         }
     }
+
 
     override fun onResume() {
         super.onResume()
@@ -90,11 +95,25 @@ class UploadImageFragment : Fragment() {
         Log.d("texts", "onDestroy: ")
     }
 
+
     companion object {
         const val CAMERA_PERMISSION = 100
         const val STORAGE_PERMISSION = 101
         var uploadLl: LinearLayout? = null
         var uploadL2: LinearLayout? = null
+        var upload_btn: Button? = null
+
+        private fun resetUploadPage(activity: Activity) {
+            showUploadOptions()
+            Glide.with(activity).load(
+                ContextCompat.getDrawable(
+                    activity,
+                    R.drawable.ic_baseline_cloud_upload_24
+                )
+            ).centerInside().into(activity.image_viewer)
+            fetchData(activity.applicationContext)
+        }
+
 
         private fun showUploadOptions() {
             uploadLl?.visibility = View.VISIBLE
@@ -111,7 +130,7 @@ class UploadImageFragment : Fragment() {
             if (f != null) {
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
-                initUpload(f)
+                initUpload(f, activity)
             } else {
                 Glide.with(activity).load(
                     ContextCompat.getDrawable(
@@ -124,16 +143,61 @@ class UploadImageFragment : Fragment() {
             }
         }
 
-        private fun initUpload(f: File) {
-            Log.d("texts", "initUpload: " + f.length())
-            Log.d("texts", "initUpload: " + f.absolutePath)
+        private fun initUpload(f: File, activity: Activity) {
+            upload_btn?.setOnClickListener {
+                val pkgname = MainActivity.GetPkgName(activity)
+                val uid = Firebase.auth.uid.toString()
+                val ref =
+                    Firebase.storage.reference.child(pkgname).child(uid)
+                        .child(f.name).putFile(f.toUri())
+                ref.addOnSuccessListener { uploadTask ->
+                    val postsRef = MainActivity.getDBRef(activity, "posts")
+                    val userMap: HashMap<String, Any> = hashMapOf()
+                    userMap["uid"] = uid + ""
+                    userMap["location"] = uploadTask.storage.path
+                    userMap["like"] = 0
+                    userMap["time"] = ServerValue.TIMESTAMP
+                    postsRef.push().setValue(userMap).addOnCompleteListener {
+                        Toast.makeText(activity, "Upload Successful", Toast.LENGTH_SHORT).show()
+                        updateUI(activity)
+                    }.addOnFailureListener {
+                        uploadTask.storage.delete()
+                        Toast.makeText(activity, "Upload Failed Try Again", Toast.LENGTH_SHORT)
+                            .show()
+                    }.addOnCanceledListener {
+                        uploadTask.storage.delete()
+                        Toast.makeText(activity, "Upload Failed Try Again", Toast.LENGTH_SHORT)
+                            .show()
+                    }
+                }.addOnCanceledListener {
+                    Toast.makeText(activity, "Upload Cancelled", Toast.LENGTH_SHORT).show()
+                }.addOnFailureListener {
+                    Toast.makeText(
+                        activity,
+                        "Upload Failed - " + it.localizedMessage,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
         }
 
+        private fun updateUI(activity: Activity) {
+            activity.home_viewpager.setCurrentItem(0, true)
+            resetUploadPage(activity)
+        }
+
+
         fun setImage(imageBitmap: Uri, image_viewer: ImageView, activity: Activity) {
-            val f = convertToFile(imageBitmap, activity)
-            Glide.with(activity).load(f).centerInside().into(image_viewer)
-            showUploadButton()
-            initUpload(f)
+            var f: File? = convertToFile(imageBitmap, activity)
+            if (f != null) {
+                val bmp = BitmapFactory.decodeFile(f.absolutePath)
+                f = compressImage(bmp, f)
+                Glide.with(activity).load(f).centerInside().into(image_viewer)
+                showUploadButton()
+                if (f != null) {
+                    initUpload(f, activity)
+                }
+            }
         }
 
         private fun convertToFile(bitmap: Bitmap, context: Activity): File? {
@@ -142,20 +206,49 @@ class UploadImageFragment : Fragment() {
                 f.delete()
             }
             if (f.createNewFile()) {
-                return try {
-                    val bos = ByteArrayOutputStream()
-                    bitmap.compress(Bitmap.CompressFormat.JPEG, 75 /*ignored for PNG*/, bos)
-                    val bitmapdata = bos.toByteArray()
-                    val fos = FileOutputStream(f)
-                    fos.write(bitmapdata)
-                    fos.flush()
-                    fos.close()
-                    f
-                } catch (e: Exception) {
-                    null
-                }
+                return compressImage(bitmap, f)
             }
             return null
+        }
+
+        private fun compressImage(bitmap: Bitmap, f: File): File? {
+            var bmp: Bitmap? = resize(bitmap, 2000, 2000)
+            if (bmp == null) {
+                bmp = bitmap
+            }
+            return try {
+                val bos = ByteArrayOutputStream()
+                bmp.compress(Bitmap.CompressFormat.JPEG, 80 /*ignored for PNG*/, bos)
+                val bitmapdata = bos.toByteArray()
+                val fos = FileOutputStream(f)
+                fos.write(bitmapdata)
+                fos.flush()
+                fos.close()
+                f
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        private fun resize(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap? {
+            var image = image
+            return if (maxHeight > 0 && maxWidth > 0) {
+                val width = image.width
+                val height = image.height
+                val ratioBitmap = width.toFloat() / height.toFloat()
+                val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
+                var finalWidth = maxWidth
+                var finalHeight = maxHeight
+                if (ratioMax > ratioBitmap) {
+                    finalWidth = (maxHeight.toFloat() * ratioBitmap).toInt()
+                } else {
+                    finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
+                }
+                image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true)
+                image
+            } else {
+                image
+            }
         }
 
         private fun convertToFile(uri: Uri, context: Activity): File {

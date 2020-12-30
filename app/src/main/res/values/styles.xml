@@ -38,8 +38,8 @@
     </style>
 
     <style name="ThemeOverlay.App.BottomNavigationView" parent="">
-        <item name="colorPrimary">@color/primaryDarkColor</item>
-        <item name="colorOnPrimary">@color/primaryTextColor</item>
+        <item name="colorPrimary">@color/primaryLightColor</item>
+        <item name="colorOnPrimary">@color/secondaryDarkColor</item>
     </style>
 
     <style name="MyTextViewStyle" parent="android:Widget.TextView">

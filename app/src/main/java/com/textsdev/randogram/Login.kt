@@ -96,7 +96,6 @@ class Login : AppCompatActivity() {
                 } else {
                     val ref = getDBRef(activity, "users")
                     val userMap: HashMap<String, Any> = hashMapOf()
-                    userMap["email"] = currentUser.email + ""
                     userMap["name"] = currentUser.displayName + ""
                     userMap["image"] = currentUser.photoUrl.toString()
                     ref.child(currentUser.uid).setValue(userMap).addOnCompleteListener {
