@@ -19,8 +19,6 @@ import com.textsdev.randogram.MainActivity.Companion.getDBRef
 import com.textsdev.randogram.MainActivity.Companion.hideBar
 import com.textsdev.randogram.MainActivity.Companion.startA
 import kotlinx.android.synthetic.main.login.*
-import java.lang.Exception
-import kotlin.collections.HashMap
 
 
 class Login : AppCompatActivity() {
@@ -40,7 +38,7 @@ class Login : AppCompatActivity() {
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
         glogin.setOnClickListener {
-            val signInIntent: Intent = googleSignInClient.getSignInIntent()
+            val signInIntent: Intent = googleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
         alogin.setOnClickListener {
@@ -119,6 +117,7 @@ class Login : AppCompatActivity() {
         ) {
             Toast.makeText(activity, s, Toast.LENGTH_SHORT).show()
             val i = Intent(activity, Homescreen::class.java)
+            i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startA(activity, i)
         }
     }

@@ -4,7 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@drawable/background">
 
     <ImageView
         android:id="@+id/imageView"
@@ -28,13 +29,20 @@
 
     <TextView
         android:id="@+id/textView"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:autoText="false"
         android:fontFamily="@font/bangers"
+        android:gravity="center"
         android:text="Welcome\nTo\nRandogram"
         android:textAlignment="center"
+        android:textColor="@color/secondaryLightColor"
         android:textSize="30sp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:autoSizeMaxTextSize="40sp"
+        app:autoSizeMinTextSize="30sp"
+        app:autoSizeStepGranularity="1sp"
+        app:autoSizeTextType="uniform"
+        app:layout_constraintBottom_toTopOf="@+id/letsgo"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/imageView" />
@@ -44,10 +52,14 @@
         style="@style/TextAppearance.App.Button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:paddingLeft="30dp"
+        android:paddingTop="16dp"
+        android:paddingRight="30dp"
+        android:paddingBottom="16dp"
         android:text="@string/let_s_go"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView" />
+        app:layout_constraintTop_toBottomOf="@+id/space" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

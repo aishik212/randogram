@@ -111,7 +111,7 @@ class UploadImageFragment : Fragment() {
                     R.drawable.ic_baseline_cloud_upload_24
                 )
             ).centerInside().into(activity.image_viewer)
-            fetchData(activity.applicationContext)
+            fetchData(activity.applicationContext, activity)
         }
 
 

@@ -15,7 +15,6 @@ import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.activity_main.*
-import java.lang.Exception
 import java.util.*
 
 
@@ -28,8 +27,7 @@ class MainActivity : AppCompatActivity() {
         hideBar(supportActionBar)
         try {
             Firebase.database.setPersistenceEnabled(true)
-        }catch (e : Exception)
-        {
+        } catch (e: Exception) {
 
         }
         if (FirebaseAuth.getInstance().currentUser != null) {
@@ -39,7 +37,7 @@ class MainActivity : AppCompatActivity() {
                 override fun run() {
                     this@MainActivity.runOnUiThread {
                         val i = Intent(this@MainActivity, Homescreen::class.java)
-                        i.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startA(this@MainActivity, i)
                     }
                 }
@@ -47,7 +45,7 @@ class MainActivity : AppCompatActivity() {
         } else {
             letsgo.setOnClickListener {
                 val i = Intent(this, Login::class.java)
-                i.flags = Intent.FLAG_ACTIVITY_CLEAR_TASK
+                i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startA(this, i)
             }
         }

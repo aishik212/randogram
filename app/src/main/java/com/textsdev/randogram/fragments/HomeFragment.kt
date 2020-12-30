@@ -1,12 +1,15 @@
 package com.textsdev.randogram.fragments
 
+import android.app.Activity
 import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -41,14 +44,14 @@ class HomeFragment : Fragment() {
             LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
         posts_rv.layoutManager = linearLayoutManager
         posts_rv.adapter = postAdapter
-        fetchData(requireContext())
+        fetchData(requireContext(), requireActivity())
     }
 
     companion object {
         lateinit var postList: ArrayList<HashMap<String, Any>>
 
         var postAdapter: PostAdapter? = null
-        fun fetchData(context: Context) {
+        fun fetchData(context: Context, activity: Activity) {
             val postRef = MainActivity.getDBRef(context, "posts")
             postRef.addListenerForSingleValueEvent(object :
                 ValueEventListener {
@@ -66,7 +69,16 @@ class HomeFragment : Fragment() {
                         hmap["time"] = time
                         postList.add(hmap)
                     }
-                    postAdapter?.notifyDataSetChanged()
+                    val noPostTV = activity.findViewById<TextView>(R.id.no_post_tv)
+                    val postRV = activity.findViewById<RecyclerView>(R.id.posts_rv)
+                    if (postList.size > 0) {
+                        noPostTV?.visibility = View.GONE
+                        postRV?.visibility = View.VISIBLE
+                        postAdapter?.notifyDataSetChanged()
+                    } else {
+                        noPostTV?.visibility = View.VISIBLE
+                        postRV?.visibility = View.GONE
+                    }
                 }
 
                 override fun onCancelled(error: DatabaseError) {
