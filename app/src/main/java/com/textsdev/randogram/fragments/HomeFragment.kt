@@ -3,30 +3,29 @@ package com.textsdev.randogram.fragments
 import android.app.Activity
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
 import com.textsdev.randogram.adapters.PostAdapter
+import com.yuyakaido.android.cardstackview.*
 import kotlinx.android.synthetic.main.home_fragment_layout.*
 
 
 class HomeFragment : Fragment() {
-
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-
-    }
-
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,11 +39,84 @@ class HomeFragment : Fragment() {
         super.onStart()
         postList = arrayListOf()
         postAdapter = PostAdapter(postList, requireContext())
-        val linearLayoutManager =
-            LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false)
-        posts_rv.layoutManager = linearLayoutManager
-        posts_rv.adapter = postAdapter
+        LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
+        val cardStackView = view?.findViewById<CardStackView>(R.id.posts_rv)
+        if (cardStackView != null) {
+            val cardStackLayoutManager =
+                CardStackLayoutManager(context, object : CardStackListener {
+                    var v: View? = null
+                    override fun onCardDragging(direction: Direction?, ratio: Float) {
+                        Log.d("texts", "onCardDragging: ")
+                    }
+
+                    override fun onCardSwiped(direction: Direction?) {
+                        if (posts_rv.childCount == 0) {
+                            alterVisibilityPosts(activity, false)
+                        }
+                        val liked = Direction.Left
+                        val hated = Direction.Right
+                        val tag = v?.tag as DatabaseReference
+                        if (direction == liked) {
+                            val child =
+                                MainActivity.getDBRef(requireContext(), "likes")
+                                    .child(tag.key.toString())
+                            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                                .setValue("")
+                                .addOnSuccessListener {
+                                    child.addListenerForSingleValueEvent(
+                                        object : ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                val niceCount = snapshot.childrenCount
+                                                Log.d("texts", "onDataChange: " + niceCount)
+                                                tag.child("like").setValue(niceCount)
+                                                Toast.makeText(
+                                                    requireContext(),
+                                                    "Liked",
+                                                    Toast.LENGTH_SHORT
+                                                ).show()
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+
+                                            }
+                                        })
+                                }
+                        }
+                    }
+
+                    override fun onCardRewound() {
+                        Log.d("texts", "onCardRewound: ")
+                    }
+
+                    override fun onCardCanceled() {
+                        Log.d("texts", "onCardCanceled: ")
+                    }
+
+                    override fun onCardAppeared(view: View?, position: Int) {
+                        Log.d("texts", "onCardAppeared: ")
+                    }
+
+                    override fun onCardDisappeared(view: View?, position: Int) {
+                        v = view
+                    }
+
+                })
+            cardStackLayoutManager.setCanScrollVertical(false)
+            cardStackLayoutManager.setDirections(Direction.HORIZONTAL)
+            cardStackLayoutManager.setScaleInterval(0.9F)
+            cardStackLayoutManager.setTranslationInterval(8.0f)
+            cardStackLayoutManager.setVisibleCount(3)
+            cardStackLayoutManager.setStackFrom(StackFrom.Right)
+
+            cardStackView.layoutManager = cardStackLayoutManager
+            cardStackView.adapter = postAdapter
+        }
         fetchData(requireContext(), requireActivity())
+        val swipeLayout = activity?.findViewById<SwipeRefreshLayout>(R.id.swipe)
+
+        swipeLayout?.setOnRefreshListener {
+            fetchData(requireContext(), requireActivity())
+        }
     }
 
     companion object {
@@ -67,24 +139,49 @@ class HomeFragment : Fragment() {
                         hmap["uid"] = uid
                         hmap["likes"] = likes
                         hmap["time"] = time
+                        hmap["reference"] = it.ref
                         postList.add(hmap)
                     }
-                    val noPostTV = activity.findViewById<TextView>(R.id.no_post_tv)
-                    val postRV = activity.findViewById<RecyclerView>(R.id.posts_rv)
-                    if (postList.size > 0) {
-                        noPostTV?.visibility = View.GONE
-                        postRV?.visibility = View.VISIBLE
-                        postAdapter?.notifyDataSetChanged()
-                    } else {
-                        noPostTV?.visibility = View.VISIBLE
-                        postRV?.visibility = View.GONE
-                    }
+                    postList.reverse()
+                    checkPostAndShow(activity)
                 }
 
                 override fun onCancelled(error: DatabaseError) {
 
                 }
             })
+        }
+
+        private fun checkPostAndShow(activity: Activity) {
+            try {
+                val swipeLayout = activity.findViewById<SwipeRefreshLayout>(R.id.swipe)
+                swipeLayout.isRefreshing = false
+                if (postList.size > 0) {
+                    alterVisibilityPosts(activity, true)
+                    postAdapter?.notifyDataSetChanged()
+                } else {
+                    alterVisibilityPosts(activity, false)
+                }
+            } catch (e: Exception) {
+                Log.d("texts", "checkPostAndShow: " + e.localizedMessage)
+            }
+        }
+
+        private fun alterVisibilityPosts(
+            activity: Activity?,
+            b: Boolean
+        ) {
+            if (activity != null) {
+                val noPostTV = activity.findViewById<TextView>(R.id.no_post_tv)
+                val postRV = activity.findViewById<RecyclerView>(R.id.posts_rv)
+                if (b) {
+                    noPostTV.visibility = View.GONE
+                    postRV.visibility = View.VISIBLE
+                } else {
+                    noPostTV.visibility = View.VISIBLE
+                    postRV.visibility = View.GONE
+                }
+            }
         }
 
     }

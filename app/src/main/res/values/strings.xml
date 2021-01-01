@@ -7,6 +7,6 @@
     <string name="upload_from_camera">Upload From Camera</string>
     <string name="login_via_google">Login Via Google</string>
     <string name="skip_login">Skip Login</string>
-    <string name="nice">Nice</string>
-    <string name="no_posts_yet">No Posts Yet</string>
+    <string name="nice">Noice</string>
+    <string name="no_posts_yet">No Posts Yet\nRefresh to get Posts</string>
 </resources>

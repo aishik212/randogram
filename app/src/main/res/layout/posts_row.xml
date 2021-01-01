@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/postTopCL"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_margin="10dp"
     android:background="@drawable/button_bg"
     android:elevation="5dp"
     android:padding="5dp">
@@ -11,21 +12,46 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
+        android:layout_margin="15dp"
+        android:elevation="2dp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:id="@+id/view2"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="@color/primaryTextColor"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/time_row_tv" />
+
+        <View
+            android:id="@+id/view"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:layout_marginBottom="7dp"
+            android:background="@color/primaryTextColor"
+            app:layout_constraintBottom_toTopOf="@+id/niceCl"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/name_row_tv"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_margin="1dp"
+            android:fontFamily="@font/alegreya_sans_sc_medium"
             android:padding="2dp"
             android:text=""
+            android:textSize="18sp"
             app:layout_constraintEnd_toStartOf="@+id/more_menu_btn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintTop_toTopOf="parent"
+            tools:text="@tools:sample/cities" />
 
         <androidx.appcompat.widget.AppCompatImageButton
             android:id="@+id/more_menu_btn"
@@ -35,7 +61,6 @@
             android:layout_margin="1dp"
             android:minWidth="24dp"
             android:padding="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/ic_outline_more_vert_24" />
@@ -47,59 +72,65 @@
             android:layout_margin="1dp"
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
+            android:fontFamily="@font/alegreya_sans"
             android:padding="2dp"
             android:text=""
             app:layout_constraintBottom_toBottomOf="@+id/more_menu_btn"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/name_row_tv" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <ImageView
-        android:id="@+id/post_imv"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_margin="1dp"
-        android:cropToPadding="true"
-        android:foregroundGravity="center"
-        android:padding="2dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintBottom_toTopOf="@+id/constraintLayout2"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/constraintLayout"
-        app:srcCompat="@drawable/ic_baseline_sync_24" />
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/constraintLayout2"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+            app:layout_constraintTop_toBottomOf="@+id/name_row_tv"
+            tools:text="@tools:sample/cities" />
 
         <ImageView
-            android:id="@+id/nice_imv"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_margin="1dp"
+            android:id="@+id/post_imv"
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_marginTop="5dp"
+            android:layout_marginBottom="5dp"
+            android:cropToPadding="true"
+            android:foregroundGravity="center"
             android:padding="2dp"
-            app:layout_constraintBottom_toBottomOf="parent"
+            android:scaleType="fitCenter"
+            app:layout_constraintBottom_toTopOf="@+id/view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/ic_baseline_add_24"
-            app:tint="#000000" />
+            app:layout_constraintTop_toBottomOf="@+id/view2"
+            app:layout_constraintVertical_bias="0.0"
+            app:srcCompat="@drawable/ic_baseline_sync_24" />
 
-        <TextView
-            android:id="@+id/nice_tv"
-            android:layout_width="wrap_content"
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/niceCl"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_margin="1dp"
-            android:padding="2dp"
-            android:text="Nice"
+            android:elevation="2dp"
+            android:foregroundGravity="center_vertical"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toEndOf="@+id/nice_imv"
-            app:layout_constraintTop_toTopOf="parent" />
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <ImageView
+                android:id="@+id/nice_imv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:srcCompat="@drawable/ic_baseline_add_24"
+                app:tint="#000000" />
+
+            <TextView
+                android:id="@+id/nice_tv"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_margin="3dp"
+                android:fontFamily="@font/alegreya_sans_sc_medium"
+                android:text="Nice"
+                app:layout_constraintBottom_toBottomOf="@+id/nice_imv"
+                app:layout_constraintStart_toEndOf="@+id/nice_imv"
+                app:layout_constraintTop_toTopOf="@+id/nice_imv" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

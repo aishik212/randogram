@@ -22,6 +22,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
+import com.google.android.material.progressindicator.LinearProgressIndicator
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.database.ServerValue
 import com.google.firebase.ktx.Firebase
@@ -47,9 +48,11 @@ class UploadImageFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        uploadLl = upload_ll
+        uploadL1 = upload_ll
         uploadL2 = upload_ll_2
+        uploadL3 = upload_ll_3
         upload_btn = upload_image_button
+        upload_prog = upload_progress
         showUploadOptions()
     }
 
@@ -99,9 +102,11 @@ class UploadImageFragment : Fragment() {
     companion object {
         const val CAMERA_PERMISSION = 100
         const val STORAGE_PERMISSION = 101
-        var uploadLl: LinearLayout? = null
+        var uploadL1: LinearLayout? = null
         var uploadL2: LinearLayout? = null
+        var uploadL3: LinearLayout? = null
         var upload_btn: Button? = null
+        var upload_prog: LinearProgressIndicator? = null
 
         private fun resetUploadPage(activity: Activity) {
             showUploadOptions()
@@ -116,14 +121,23 @@ class UploadImageFragment : Fragment() {
 
 
         private fun showUploadOptions() {
-            uploadLl?.visibility = View.VISIBLE
+            uploadL1?.visibility = View.VISIBLE
             uploadL2?.visibility = View.GONE
+            uploadL3?.visibility = View.GONE
         }
 
         private fun showUploadButton() {
-            uploadLl?.visibility = View.GONE
+            uploadL1?.visibility = View.GONE
+            uploadL3?.visibility = View.GONE
             uploadL2?.visibility = View.VISIBLE
         }
+
+        private fun showProgress() {
+            uploadL1?.visibility = View.GONE
+            uploadL3?.visibility = View.VISIBLE
+            uploadL2?.visibility = View.GONE
+        }
+
 
         fun setImage(imageBitmap: Bitmap, image_viewer: ImageView, activity: Activity) {
             val f = convertToFile(imageBitmap, activity)
@@ -145,12 +159,21 @@ class UploadImageFragment : Fragment() {
 
         private fun initUpload(f: File, activity: Activity) {
             upload_btn?.setOnClickListener {
+                showProgress()
                 val pkgname = MainActivity.GetPkgName(activity)
                 val uid = Firebase.auth.uid.toString()
                 val ref =
                     Firebase.storage.reference.child(pkgname).child(uid)
                         .child(f.name).putFile(f.toUri())
-                ref.addOnSuccessListener { uploadTask ->
+                ref.addOnProgressListener {
+                    val fl = (it.bytesTransferred.toFloat() / it.totalByteCount.toFloat()) * 100
+                    upload_prog?.setProgressCompat(fl.toInt(), true)
+                    Toast.makeText(
+                        activity,
+                        "Uploaded $fl%",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }.addOnSuccessListener { uploadTask ->
                     val postsRef = MainActivity.getDBRef(activity, "posts")
                     val userMap: HashMap<String, Any> = hashMapOf()
                     userMap["uid"] = uid + ""

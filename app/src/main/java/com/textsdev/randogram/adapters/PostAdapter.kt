@@ -8,19 +8,20 @@ import android.view.ViewGroup
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
 import org.json.JSONObject
 import java.io.File
-import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class PostAdapter(
     private val posts: ArrayList<HashMap<String, Any>>,
@@ -33,6 +34,8 @@ class PostAdapter(
         private var nameTv: TextView = v.findViewById(R.id.name_row_tv)
         private var timeTv: TextView = v.findViewById(R.id.time_row_tv)
         private var niceTv: TextView = v.findViewById(R.id.nice_tv)
+        private var niceCl: ConstraintLayout = v.findViewById(R.id.niceCl)
+        private var postTopCL: ConstraintLayout = v.findViewById(R.id.postTopCL)
         private var postImv: ImageView = v.findViewById(R.id.post_imv)
         private var niceImv: ImageView = v.findViewById(R.id.nice_imv)
         private var moreImageView: ImageButton = v.findViewById(R.id.more_menu_btn)
@@ -48,9 +51,6 @@ class PostAdapter(
                 R.id.more_menu_btn -> {
 
                 }
-                (R.id.nice_imv or R.id.nice_tv) -> {
-
-                }
             }
         }
 
@@ -62,19 +62,47 @@ class PostAdapter(
         ) {
             nameTv.text = UName
             val time = hashMap["time"].toString()
-
             timeTv.text = convertLongToDuration(time.toLong())
+            val ref = hashMap["reference"] as DatabaseReference
             val niceness = hashMap["likes"].toString()
-            if (niceness.toInt() == 69) {
-                niceTv.text = context.getString(R.string.nice)
-            } else if (niceness.toInt() < 69) {
-                niceTv.text = niceness
-            }
+            val child = MainActivity.getDBRef(context, "likes").child(ref.key.toString())
+            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                .addListenerForSingleValueEvent(object :
+                    ValueEventListener {
+                    override fun onDataChange(snapshot: DataSnapshot) {
+                        if (snapshot.value != null) {
+                            updateLikes(
+                                niceness.toInt(),
+                                context,
+                                niceImv,
+                                true
+                            )
+                        } else {
+                            updateLikes(
+                                niceness.toInt(),
+                                context,
+                                niceImv,
+                                false
+                            )
+                        }
+                    }
+
+                    override fun onCancelled(error: DatabaseError) {
+                        updateLikes(
+                            niceness.toInt(),
+                            context,
+                            niceImv,
+                            false
+                        )
+                    }
+
+                })
             if (absolutePath != null) {
                 val file = File(absolutePath)
                 if (file.exists() && file.length() > 0) {
                     Glide.with(context).load(file).into(postImv)
                 } else {
+                    file.delete()
                     Glide.with(context)
                         .load(ContextCompat.getDrawable(context, R.drawable.ic_baseline_removed))
                         .into(postImv)
@@ -84,30 +112,127 @@ class PostAdapter(
                     .load(ContextCompat.getDrawable(context, R.drawable.ic_baseline_removed))
                     .into(postImv)
             }
+            postTopCL.tag = ref
+            niceCl.setOnClickListener {
+                val child = MainActivity.getDBRef(context, "likes").child(ref.key.toString())
+                child.child(FirebaseAuth.getInstance().currentUser?.uid + "").setValue("")
+                    .addOnSuccessListener {
+                        child.addListenerForSingleValueEvent(
+                            object : ValueEventListener {
+                                override fun onDataChange(snapshot: DataSnapshot) {
+                                    val niceCount = snapshot.childrenCount
+                                    ref.child("like").setValue(niceCount)
+                                    child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                                        .addListenerForSingleValueEvent(object :
+                                            ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                if (snapshot.value != null) {
+                                                    updateLikes(
+                                                        niceCount.toInt(),
+                                                        context,
+                                                        niceImv,
+                                                        true
+                                                    )
+                                                } else {
+                                                    updateLikes(
+                                                        niceCount.toInt(),
+                                                        context,
+                                                        niceImv,
+                                                        false
+                                                    )
+                                                }
+                                            }
+
+                                            override fun onCancelled(error: DatabaseError) {
+                                                updateLikes(
+                                                    niceCount.toInt(),
+                                                    context,
+                                                    niceImv,
+                                                    false
+                                                )
+                                            }
+
+                                        })
+                                }
+
+                                override fun onCancelled(error: DatabaseError) {
+
+                                }
+                            })
+                    }
+            }
+        }
+
+        private fun updateLikes(
+            niceCount: Int,
+            context: Context,
+            niceImv: ImageView,
+            likedByUser: Boolean
+        ) {
+            if (!likedByUser) {
+                niceTv.text = niceCount.toString()
+                niceImv.setImageDrawable(
+                    ContextCompat.getDrawable(
+                        context,
+                        R.drawable.ic_baseline_add_24
+                    )
+                )
+            } else {
+                when {
+                    niceCount == 69 -> {
+                        niceTv.text = context.getString(R.string.nice)
+                        niceImv.setImageDrawable(
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.ic_baseline_favorite_24
+                            )
+                        )
+                    }
+                    niceCount < 69 -> {
+                        niceTv.text = niceCount.toString()
+                        niceImv.setImageDrawable(
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.ic_baseline_thumb_up_24
+                            )
+                        )
+                    }
+                    niceCount > 69 -> {
+                        niceTv.text = niceCount.toString()
+                        niceImv.setImageDrawable(
+                            ContextCompat.getDrawable(
+                                context,
+                                R.drawable.ic_baseline_thumb_up_24
+                            )
+                        )
+                    }
+                }
+
+            }
         }
 
         private fun convertLongToDuration(time: Long): String {
             val curtime = System.currentTimeMillis()
-            val diff = (curtime - time)/1000
-            Log.d("texts", "convertLongToDuration: $diff")
+            val diff = (curtime - time) / 1000
+            Log.d("texts", "convertLongToDuration: $diff $curtime $time")
             return when {
                 diff < 60 -> {
-                    "Uploaded In the Last Minute"
-                }
-                diff < 60 -> {
-                    "Uploaded In the Last Hour"
+                    "Seconds Ago"
                 }
                 diff < 60 * 60 -> {
-                    "Uploaded In the Last Day"
+                    "Minutes Ago"
                 }
                 diff < 60 * 60 * 24 -> {
-                    "Uploaded In the Last Week"
+                    "Hours Ago"
                 }
                 diff < 60 * 60 * 24 * 7 -> {
-                    "Uploaded Lifetimes Ago"
+                    "Days Ago"
+                }
+                diff < 60 * 60 * 24 * 365 -> {
+                    "Lifetimes Ago"
                 }
                 else -> {
-                    "Uploaded In the Last Decade"
+                    "Decades Ago"
                 }
             }
         }
@@ -121,11 +246,11 @@ class PostAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val hashMap = posts[position]
         val uid = hashMap["uid"]
+        val reference: DatabaseReference = hashMap["reference"] as DatabaseReference
         val pref = context.getSharedPreferences("users", 0)
         if (pref.contains("uid")) {
             val userRawData = pref.getString("uid", "")
-            Log.d("texts", "onBindViewHolder: exists")
-            continueWithUserData(JSONObject(userRawData.toString()), hashMap, holder)
+            continueWithUserData(JSONObject(userRawData.toString()), hashMap, holder, reference)
         } else {
             MainActivity.getDBRef(context, "users").child(uid.toString())
                 .addListenerForSingleValueEvent(object :
@@ -136,9 +261,9 @@ class PostAdapter(
                             snapshot.children.forEach {
                                 jsonObject.put("${it.key}", it.value)
                             }
-                            continueWithUserData(jsonObject, hashMap, holder)
+                            continueWithUserData(jsonObject, hashMap, holder, reference)
                         } else {
-                            continueWithUserData(null, hashMap, holder)
+                            continueWithUserData(null, hashMap, holder, reference)
                         }
                     }
 
@@ -152,7 +277,8 @@ class PostAdapter(
     private fun continueWithUserData(
         userRawData: JSONObject?,
         hashMap: java.util.HashMap<String, Any>,
-        holder: ViewHolder
+        holder: ViewHolder,
+        reference: DatabaseReference
     ) {
         var uname = "Anonymous"
         var dp: String? = null
@@ -161,7 +287,7 @@ class PostAdapter(
             dp = userRawData.get("image").toString()
         }
         val location: String = hashMap["location"].toString()
-        val file: File = File("${context.cacheDir}$location")
+        val file = File("${context.cacheDir}$location")
         if (file.exists()) {
             holder.bind(file.absolutePath, uname, hashMap, context)
         } else {
@@ -170,11 +296,11 @@ class PostAdapter(
             if (pathname != null) {
                 if (File(pathname).mkdirs()) {
                     if (file.createNewFile()) {
-                        downloadAndContinue(location, file, holder, uname, hashMap)
+                        downloadAndContinue(location, file, holder, uname, hashMap, reference)
                     }
                 } else {
                     if (file.createNewFile()) {
-                        downloadAndContinue(location, file, holder, uname, hashMap)
+                        downloadAndContinue(location, file, holder, uname, hashMap, reference)
                     }
                 }
             }
@@ -187,12 +313,20 @@ class PostAdapter(
         file: File,
         holder: ViewHolder,
         UName: String,
-        hashMap: java.util.HashMap<String, Any>
+        hashMap: java.util.HashMap<String, Any>,
+        reference: DatabaseReference
     ) {
         FirebaseStorage.getInstance().getReference(location).getFile(file)
             .addOnSuccessListener {
                 holder.bind(file.absolutePath, UName, hashMap, context)
             }.addOnFailureListener {
+                Log.d(
+                    "texts",
+                    "downloadAndContinue: " + it.cause.toString() + " " + (it.cause == null)
+                )
+                if (it.cause == null) {
+                    reference.removeValue()
+                }
                 holder.bind(null, UName, hashMap, context)
             }
     }
