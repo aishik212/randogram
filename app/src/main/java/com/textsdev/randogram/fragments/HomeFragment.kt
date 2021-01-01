@@ -7,6 +7,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AccelerateInterpolator
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -34,81 +35,106 @@ class HomeFragment : Fragment() {
         return inflater.inflate(R.layout.home_fragment_layout, container, false)
     }
 
+    var shownA = false
+    var shownB = false
 
-    override fun onStart() {
-        super.onStart()
+
+    private lateinit var cardStackLayoutManager: CardStackLayoutManager
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
         postList = arrayListOf()
-        postAdapter = PostAdapter(postList, requireContext())
+
         LinearLayoutManager(requireContext(), LinearLayoutManager.VERTICAL, false)
-        val cardStackView = view?.findViewById<CardStackView>(R.id.posts_rv)
+        val cardStackView = view.findViewById<CardStackView>(R.id.posts_rv)
         if (cardStackView != null) {
-            val cardStackLayoutManager =
-                CardStackLayoutManager(context, object : CardStackListener {
-                    var v: View? = null
-                    override fun onCardDragging(direction: Direction?, ratio: Float) {
-                        Log.d("texts", "onCardDragging: ")
-                    }
-
-                    override fun onCardSwiped(direction: Direction?) {
-                        if (posts_rv.childCount == 0) {
-                            alterVisibilityPosts(activity, false)
-                        }
-                        val liked = Direction.Left
-                        val hated = Direction.Right
-                        val tag = v?.tag as DatabaseReference
-                        if (direction == liked) {
-                            val child =
-                                MainActivity.getDBRef(requireContext(), "likes")
-                                    .child(tag.key.toString())
-                            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
-                                .setValue("")
-                                .addOnSuccessListener {
-                                    child.addListenerForSingleValueEvent(
-                                        object : ValueEventListener {
-                                            override fun onDataChange(snapshot: DataSnapshot) {
-                                                val niceCount = snapshot.childrenCount
-                                                Log.d("texts", "onDataChange: " + niceCount)
-                                                tag.child("like").setValue(niceCount)
-                                                Toast.makeText(
-                                                    requireContext(),
-                                                    "Liked",
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            }
-
-                                            override fun onCancelled(error: DatabaseError) {
-
-                                            }
-                                        })
-                                }
+            cardStackLayoutManager = CardStackLayoutManager(context, object : CardStackListener {
+                var v: View? = null
+                override fun onCardDragging(direction: Direction?, ratio: Float) {
+                    val liked = Direction.Left
+                    val skipped = Direction.Right
+                    if (ratio < 0.05) {
+                        if (liked == direction) {
+                            Log.d("texts", "onCardDragging: liked")
+                            if (!shownA) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Swipe Left to Skip",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                shownA = true
+                            }
+                        } else if (skipped == direction) {
+                            Log.d("texts", "onCardDragging: skipped")
+                            if (!shownB) {
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Swipe Right to Like",
+                                    Toast.LENGTH_SHORT
+                                ).show()
+                                shownB = true
+                            }
                         }
                     }
+                }
 
-                    override fun onCardRewound() {
-                        Log.d("texts", "onCardRewound: ")
+                override fun onCardSwiped(direction: Direction?) {
+                    if (posts_rv.childCount == 0) {
+                        alterVisibilityPosts(activity, false)
                     }
+                    val liked = Direction.Right
+                    val tag = v?.tag as DatabaseReference
+                    if (direction == liked) {
+                        val child = MainActivity.getDBRef(requireContext(), "likes")
+                            .child(tag.key.toString())
+                        child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                            .setValue("")
+                            .addOnSuccessListener {
+                                child.addListenerForSingleValueEvent(
+                                    object : ValueEventListener {
+                                        override fun onDataChange(snapshot: DataSnapshot) {
+                                            val niceCount = snapshot.childrenCount
+                                            tag.child("like").setValue(niceCount)
+                                        }
 
-                    override fun onCardCanceled() {
-                        Log.d("texts", "onCardCanceled: ")
+                                        override fun onCancelled(error: DatabaseError) {
+
+                                        }
+                                    })
+                            }
                     }
+                }
 
-                    override fun onCardAppeared(view: View?, position: Int) {
-                        Log.d("texts", "onCardAppeared: ")
-                    }
+                override fun onCardRewound() {
+                    Log.d("texts", "onCardRewound: ")
+                }
 
-                    override fun onCardDisappeared(view: View?, position: Int) {
-                        v = view
-                    }
+                override fun onCardCanceled() {
+                    Log.d("texts", "onCardCanceled: ")
+                }
 
-                })
+                override fun onCardAppeared(view: View?, position: Int) {
+                    Log.d("texts", "onCardAppeared: ")
+                }
+
+                override fun onCardDisappeared(view: View?, position: Int) {
+                    v = view
+                }
+
+            })
             cardStackLayoutManager.setCanScrollVertical(false)
             cardStackLayoutManager.setDirections(Direction.HORIZONTAL)
             cardStackLayoutManager.setScaleInterval(0.9F)
             cardStackLayoutManager.setTranslationInterval(8.0f)
             cardStackLayoutManager.setVisibleCount(3)
             cardStackLayoutManager.setStackFrom(StackFrom.Right)
-
             cardStackView.layoutManager = cardStackLayoutManager
+            postAdapter = PostAdapter(
+                postList,
+                requireContext(),
+                requireActivity(),
+                cardStackLayoutManager,
+                posts_rv
+            )
             cardStackView.adapter = postAdapter
         }
         fetchData(requireContext(), requireActivity())
@@ -121,6 +147,26 @@ class HomeFragment : Fragment() {
 
     companion object {
         lateinit var postList: ArrayList<HashMap<String, Any>>
+
+        fun swipeLike(cardStackLayoutManager: CardStackLayoutManager, posts_rv: CardStackView) {
+            val setting = SwipeAnimationSetting.Builder()
+                .setDirection(Direction.Right)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(AccelerateInterpolator())
+                .build()
+            cardStackLayoutManager.setSwipeAnimationSetting(setting)
+            posts_rv.swipe()
+        }
+
+        fun swipeSkip(cardStackLayoutManager: CardStackLayoutManager, posts_rv: CardStackView) {
+            val setting = SwipeAnimationSetting.Builder()
+                .setDirection(Direction.Left)
+                .setDuration(Duration.Normal.duration)
+                .setInterpolator(AccelerateInterpolator())
+                .build()
+            cardStackLayoutManager.setSwipeAnimationSetting(setting)
+            posts_rv.swipe()
+        }
 
         var postAdapter: PostAdapter? = null
         fun fetchData(context: Context, activity: Activity) {
@@ -140,7 +186,9 @@ class HomeFragment : Fragment() {
                         hmap["likes"] = likes
                         hmap["time"] = time
                         hmap["reference"] = it.ref
-                        postList.add(hmap)
+                        if (hmap.keys.size >= 4) {
+                            postList.add(hmap)
+                        }
                     }
                     postList.reverse()
                     checkPostAndShow(activity)

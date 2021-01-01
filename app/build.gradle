@@ -11,6 +11,18 @@ android {
             keyAlias 'rgram'
             keyPassword 'randogram'
         }
+        rgramdebug {
+            storeFile file('/home/aishik/AndroidStudioProjects/RandoGram/Randogram_debug.jks')
+            storePassword '123456'
+            keyAlias 'key0'
+            keyPassword '123456'
+        }
+        rgraminternal {
+            storeFile file('/home/aishik/AndroidStudioProjects/RandoGram/Randogram_debug.jks')
+            storePassword '123456'
+            keyAlias 'key0'
+            keyPassword '123456'
+        }
     }
     compileSdkVersion 30
     buildToolsVersion "30.0.2"
@@ -21,7 +33,6 @@ android {
         targetSdkVersion 30
         versionCode 1
         versionName "1.0"
-
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         signingConfig signingConfigs.rgram
     }
@@ -31,10 +42,19 @@ android {
             minifyEnabled true
             shrinkResources true
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
-            signingConfigs.rgram
+            multiDexEnabled true
+            signingConfig signingConfigs.rgram
         }
         debug {
-            signingConfigs.rgram
+            signingConfig signingConfigs.rgramdebug
+            ext.enableCrashlytics = false
+        }
+        internal {
+            signingConfig signingConfigs.rgraminternal
+            debuggable true
+            minifyEnabled true
+            multiDexEnabled true
+            ext.enableCrashlytics = false
         }
     }
     compileOptions {
@@ -62,6 +82,9 @@ dependencies {
 
     //cardstackview
     implementation "com.yuyakaido.android:card-stack-view:2.3.4"
+
+    //fetch
+    implementation "androidx.tonyodev.fetch2:xfetch2:3.1.6"
 
     //External Libraries
     implementation "androidx.fragment:fragment-ktx:1.2.5"

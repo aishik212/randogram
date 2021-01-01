@@ -13,7 +13,9 @@
         android:required="false" />
 
     <uses-permission android:name="android.permission.CAMERA" />
-    <uses-permission android:name="ANDROID.PERMISSION.READ_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="ANDROID.PERMISSION.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.INTERNET" />
 
     <application
         android:allowBackup="true"
@@ -30,7 +32,10 @@
             </intent-filter>
         </activity>
         <activity android:name=".Login" />
-        <activity android:name=".Homescreen" />
+        <activity
+            android:name=".Homescreen"
+            android:screenOrientation="sensorPortrait" />
+        <activity android:name=".adapters.photoViewerActivity" />
 
         <meta-data
             android:name="preloaded_fonts"

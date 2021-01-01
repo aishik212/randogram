@@ -67,21 +67,15 @@ class MainActivity : AppCompatActivity() {
             supportActionBar?.hide()
         }
 
-        fun GetPkgName(context: Context): String {
+        fun getPkgName(context: Context): String {
             return (context.packageName).replace(".", "_")
         }
 
         fun getDBRef(context: Context, child: String): DatabaseReference {
-            val packageName = GetPkgName(context)
-            return if (BuildConfig.DEBUG) {
-                FirebaseDatabase.getInstance().getReference(packageName).child(
-                    "debug"
-                ).child(child)
-            } else {
-                FirebaseDatabase.getInstance().getReference(packageName).child(
-                    "release"
-                ).child(child)
-            }
+            val packageName = getPkgName(context)
+            return FirebaseDatabase.getInstance().getReference(packageName)
+                .child(BuildConfig.BUILD_TYPE).child(child)
         }
+
     }
 }

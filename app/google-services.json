@@ -339,6 +339,14 @@
           }
         },
         {
+          "client_id": "901264131276-bra3jhk32httbe4b3dbfv1l0qud3oi8f.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.textsdev.randogram",
+            "certificate_hash": "5d338c4cb79718e002118eefc827a8911156bc8d"
+          }
+        },
+        {
           "client_id": "901264131276-ninfofd4djr5vl7bbl2a4cl03s5g0e4n.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

@@ -1,10 +1,14 @@
 package com.textsdev.randogram.adapters
 
+import android.app.Activity
 import android.content.Context
+import android.content.Intent
+import android.graphics.BitmapFactory
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
@@ -20,17 +24,24 @@ import com.google.firebase.database.ValueEventListener
 import com.google.firebase.storage.FirebaseStorage
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
+import com.textsdev.randogram.fragments.HomeFragment
+import com.textsdev.randogram.fragments.UploadImageFragment
+import com.yuyakaido.android.cardstackview.CardStackLayoutManager
+import com.yuyakaido.android.cardstackview.CardStackView
 import org.json.JSONObject
 import java.io.File
 
 class PostAdapter(
     private val posts: ArrayList<HashMap<String, Any>>,
-    private val context: Context
+    private val context: Context,
+    private val activity: Activity,
+    private val cardStackLayoutManager: CardStackLayoutManager,
+    private val posts_rv: CardStackView
 ) :
 
     RecyclerView.Adapter<PostAdapter.ViewHolder>() {
 
-    class ViewHolder(v: View) : RecyclerView.ViewHolder(v), View.OnClickListener {
+    class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         private var nameTv: TextView = v.findViewById(R.id.name_row_tv)
         private var timeTv: TextView = v.findViewById(R.id.time_row_tv)
         private var niceTv: TextView = v.findViewById(R.id.nice_tv)
@@ -39,26 +50,18 @@ class PostAdapter(
         private var postImv: ImageView = v.findViewById(R.id.post_imv)
         private var niceImv: ImageView = v.findViewById(R.id.nice_imv)
         private var moreImageView: ImageButton = v.findViewById(R.id.more_menu_btn)
+        private var like: Button = v.findViewById(R.id.like)
+        private var skip: Button = v.findViewById(R.id.skip)
 
-        init {
-            moreImageView.setOnClickListener {
-                onClick(it)
-            }
-        }
-
-        override fun onClick(v: View) {
-            when (v.id) {
-                R.id.more_menu_btn -> {
-
-                }
-            }
-        }
 
         fun bind(
             absolutePath: String?,
             UName: String,
             hashMap: java.util.HashMap<String, Any>,
             context: Context,
+            activity: Activity,
+            cardStackLayoutManager: CardStackLayoutManager,
+            posts_rv: CardStackView,
         ) {
             nameTv.text = UName
             val time = hashMap["time"].toString()
@@ -66,41 +69,21 @@ class PostAdapter(
             val ref = hashMap["reference"] as DatabaseReference
             val niceness = hashMap["likes"].toString()
             val child = MainActivity.getDBRef(context, "likes").child(ref.key.toString())
-            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
-                .addListenerForSingleValueEvent(object :
-                    ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (snapshot.value != null) {
-                            updateLikes(
-                                niceness.toInt(),
-                                context,
-                                niceImv,
-                                true
-                            )
-                        } else {
-                            updateLikes(
-                                niceness.toInt(),
-                                context,
-                                niceImv,
-                                false
-                            )
-                        }
-                    }
-
-                    override fun onCancelled(error: DatabaseError) {
-                        updateLikes(
-                            niceness.toInt(),
-                            context,
-                            niceImv,
-                            false
-                        )
-                    }
-
-                })
+            updateLikeTop(child, niceness, context)
             if (absolutePath != null) {
                 val file = File(absolutePath)
                 if (file.exists() && file.length() > 0) {
-                    Glide.with(context).load(file).into(postImv)
+                    val bmp = BitmapFactory.decodeFile(file.absolutePath)
+                    val wmark = UploadImageFragment.addWMARK(activity, bmp)
+                    if (wmark != null) {
+                        Glide.with(context).load(wmark).into(postImv)
+                    } else {
+                        try {
+                            Glide.with(context).load(bmp).into(postImv)
+                        } catch (e: Exception) {
+                            Glide.with(context).load(file).into(postImv)
+                        }
+                    }
                 } else {
                     file.delete()
                     Glide.with(context)
@@ -114,7 +97,6 @@ class PostAdapter(
             }
             postTopCL.tag = ref
             niceCl.setOnClickListener {
-                val child = MainActivity.getDBRef(context, "likes").child(ref.key.toString())
                 child.child(FirebaseAuth.getInstance().currentUser?.uid + "").setValue("")
                     .addOnSuccessListener {
                         child.addListenerForSingleValueEvent(
@@ -122,37 +104,7 @@ class PostAdapter(
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     val niceCount = snapshot.childrenCount
                                     ref.child("like").setValue(niceCount)
-                                    child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
-                                        .addListenerForSingleValueEvent(object :
-                                            ValueEventListener {
-                                            override fun onDataChange(snapshot: DataSnapshot) {
-                                                if (snapshot.value != null) {
-                                                    updateLikes(
-                                                        niceCount.toInt(),
-                                                        context,
-                                                        niceImv,
-                                                        true
-                                                    )
-                                                } else {
-                                                    updateLikes(
-                                                        niceCount.toInt(),
-                                                        context,
-                                                        niceImv,
-                                                        false
-                                                    )
-                                                }
-                                            }
-
-                                            override fun onCancelled(error: DatabaseError) {
-                                                updateLikes(
-                                                    niceCount.toInt(),
-                                                    context,
-                                                    niceImv,
-                                                    false
-                                                )
-                                            }
-
-                                        })
+                                    updateLikeTop(child, niceCount.toString(), context)
                                 }
 
                                 override fun onCancelled(error: DatabaseError) {
@@ -161,6 +113,58 @@ class PostAdapter(
                             })
                     }
             }
+            postImv.setOnClickListener {
+                val i = Intent(context, photoViewerActivity::class.java)
+                val location = hashMap["location"]
+                if (location != null) {
+                    i.putExtra("fileName", location.toString())
+                    context.startActivity(i)
+                }
+            }
+
+            like.setOnClickListener {
+                HomeFragment.swipeLike(cardStackLayoutManager, posts_rv)
+            }
+            skip.setOnClickListener {
+                HomeFragment.swipeSkip(cardStackLayoutManager, posts_rv)
+            }
+        }
+
+        private fun updateLikeTop(
+            child: DatabaseReference,
+            niceness: String,
+            context: Context
+        ) {
+            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                .addListenerForSingleValueEvent(
+                    object : ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.value != null) {
+                                updateLikes(
+                                    niceness.toInt(),
+                                    context,
+                                    niceImv,
+                                    true
+                                )
+                            } else {
+                                updateLikes(
+                                    niceness.toInt(),
+                                    context,
+                                    niceImv,
+                                    false
+                                )
+                            }
+                        }
+
+                        override fun onCancelled(error: DatabaseError) {
+                            updateLikes(
+                                niceness.toInt(),
+                                context,
+                                niceImv,
+                                false
+                            )
+                        }
+                    })
         }
 
         private fun updateLikes(
@@ -214,7 +218,6 @@ class PostAdapter(
         private fun convertLongToDuration(time: Long): String {
             val curtime = System.currentTimeMillis()
             val diff = (curtime - time) / 1000
-            Log.d("texts", "convertLongToDuration: $diff $curtime $time")
             return when {
                 diff < 60 -> {
                     "Seconds Ago"
@@ -289,9 +292,16 @@ class PostAdapter(
         val location: String = hashMap["location"].toString()
         val file = File("${context.cacheDir}$location")
         if (file.exists()) {
-            holder.bind(file.absolutePath, uname, hashMap, context)
+            holder.bind(
+                file.absolutePath,
+                uname,
+                hashMap,
+                context,
+                activity,
+                cardStackLayoutManager,
+                posts_rv
+            )
         } else {
-            Log.d("texts", "continueWithUserData: " + file.absolutePath)
             val pathname = file.parent
             if (pathname != null) {
                 if (File(pathname).mkdirs()) {
@@ -305,7 +315,6 @@ class PostAdapter(
                 }
             }
         }
-        Log.d("texts", "continueWithUserData: " + hashMap)
     }
 
     private fun downloadAndContinue(
@@ -318,7 +327,15 @@ class PostAdapter(
     ) {
         FirebaseStorage.getInstance().getReference(location).getFile(file)
             .addOnSuccessListener {
-                holder.bind(file.absolutePath, UName, hashMap, context)
+                holder.bind(
+                    file.absolutePath,
+                    UName,
+                    hashMap,
+                    context,
+                    activity,
+                    cardStackLayoutManager,
+                    posts_rv
+                )
             }.addOnFailureListener {
                 Log.d(
                     "texts",
@@ -327,7 +344,15 @@ class PostAdapter(
                 if (it.cause == null) {
                     reference.removeValue()
                 }
-                holder.bind(null, UName, hashMap, context)
+                holder.bind(
+                    null,
+                    UName,
+                    hashMap,
+                    context,
+                    activity,
+                    cardStackLayoutManager,
+                    posts_rv
+                )
             }
     }
 

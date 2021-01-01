@@ -4,8 +4,7 @@ import android.Manifest
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
+import android.graphics.*
 import android.net.Uri
 import android.os.Bundle
 import android.provider.MediaStore
@@ -138,9 +137,48 @@ class UploadImageFragment : Fragment() {
             uploadL2?.visibility = View.GONE
         }
 
+        fun addWatermark(source: Bitmap, watermark: Bitmap, ratio: Float): Bitmap {
+            val canvas: Canvas
+            val paint: Paint
+            val bmp: Bitmap
+            val matrix: Matrix
+            val r: RectF
+            val width: Int
+            val height: Int
+            val scale: Float
+            width = source.width
+            height = source.height
+
+            // Create the new bitmap
+            bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+            paint = Paint(Paint.ANTI_ALIAS_FLAG or Paint.DITHER_FLAG or Paint.FILTER_BITMAP_FLAG)
+
+            // Copy the original bitmap into the new one
+            canvas = Canvas(bmp)
+            canvas.drawBitmap(source, 0F, 0F, paint)
+
+            // Scale the watermark to be approximately to the ratio given of the source image height
+            scale = (height.toFloat() * ratio / watermark.height.toFloat())
+
+            // Create the matrix
+            matrix = Matrix()
+            matrix.postScale(scale, scale)
+
+            // Determine the post-scaled size of the watermark
+            r = RectF(0F, 0F, watermark.width.toFloat(), watermark.height.toFloat())
+            matrix.mapRect(r)
+
+            // Move the watermark to the bottom right corner
+            matrix.postTranslate(width - r.width(), height - r.height())
+
+            // Draw the watermark
+            canvas.drawBitmap(watermark, matrix, paint)
+            return bmp
+        }
+
 
         fun setImage(imageBitmap: Bitmap, image_viewer: ImageView, activity: Activity) {
-            val f = convertToFile(imageBitmap, activity)
+            val f: File? = convertToFile(imageBitmap, activity)
             if (f != null) {
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
@@ -157,10 +195,27 @@ class UploadImageFragment : Fragment() {
             }
         }
 
+        fun addWMARK(
+            activity: Activity,
+            imageBitmap: Bitmap
+        ): Bitmap? {
+            val watermark =
+                BitmapFactory.decodeResource(activity.resources, R.drawable.randogram_transparent)
+            var imageBMPW: Bitmap? = null
+            if (watermark != null) {
+                imageBMPW = addWatermark(
+                    imageBitmap,
+                    watermark,
+                    0.1F
+                )
+            }
+            return imageBMPW
+        }
+
         private fun initUpload(f: File, activity: Activity) {
             upload_btn?.setOnClickListener {
                 showProgress()
-                val pkgname = MainActivity.GetPkgName(activity)
+                val pkgname = MainActivity.getPkgName(activity)
                 val uid = Firebase.auth.uid.toString()
                 val ref =
                     Firebase.storage.reference.child(pkgname).child(uid)
