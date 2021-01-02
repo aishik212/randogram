@@ -83,9 +83,6 @@ dependencies {
     //cardstackview
     implementation "com.yuyakaido.android:card-stack-view:2.3.4"
 
-    //fetch
-    implementation "androidx.tonyodev.fetch2:xfetch2:3.1.6"
-
     //External Libraries
     implementation "androidx.fragment:fragment-ktx:1.2.5"
 

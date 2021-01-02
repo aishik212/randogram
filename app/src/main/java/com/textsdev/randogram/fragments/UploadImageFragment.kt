@@ -178,7 +178,13 @@ class UploadImageFragment : Fragment() {
 
 
         fun setImage(imageBitmap: Bitmap, image_viewer: ImageView, activity: Activity) {
-            val f: File? = convertToFile(imageBitmap, activity)
+            val newBMP = addWMARK(activity, imageBitmap)
+            val f: File?
+            if (newBMP != null) {
+                f = convertToFile(newBMP, activity)
+            } else {
+                f = convertToFile(imageBitmap, activity)
+            }
             if (f != null) {
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
@@ -269,7 +275,12 @@ class UploadImageFragment : Fragment() {
             var f: File? = convertToFile(imageBitmap, activity)
             if (f != null) {
                 val bmp = BitmapFactory.decodeFile(f.absolutePath)
-                f = compressImage(bmp, f)
+                val newBMP = addWMARK(activity, bmp)
+                if (newBMP != null) {
+                    f = compressImage(newBMP, f)
+                } else {
+                    f = compressImage(bmp, f)
+                }
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
                 if (f != null) {
