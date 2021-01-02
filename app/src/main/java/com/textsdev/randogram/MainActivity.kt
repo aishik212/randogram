@@ -25,12 +25,16 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         hideBar(supportActionBar)
+
         try {
             Firebase.database.setPersistenceEnabled(true)
         } catch (e: Exception) {
 
         }
         if (FirebaseAuth.getInstance().currentUser != null) {
+            maintainance.removeOldImages()
+            maintainance.removeLikes(applicationContext)
+            maintainance.removeOldDB(applicationContext)
             letsgo.visibility = View.GONE
             Toast.makeText(this, "Welcome to RandoGram", Toast.LENGTH_SHORT).show()
             Timer().schedule(object : TimerTask() {

@@ -5,6 +5,104 @@
     android:layout_height="match_parent"
     android:background="@drawable/background">
 
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/instructionsCL"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#C8000000"
+        android:elevation="15dp"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/textView7"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:drawableTint="@color/white"
+            android:fontFamily="@font/amatica_sc_bold"
+            android:gravity="center"
+            android:maxWidth="100dp"
+            android:padding="5dp"
+            android:text="@string/swipe_left_to_skip"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:drawableTopCompat="@drawable/swipeleft"
+            app:layout_constraintBottom_toBottomOf="@+id/textView6"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView5"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:drawableTint="@color/white"
+            android:fontFamily="@font/amatica_sc_bold"
+            android:gravity="center"
+            android:maxWidth="100dp"
+            android:padding="5dp"
+            android:text="@string/swipe_right_to_like"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:drawableTopCompat="@drawable/swipright"
+            app:layout_constraintBottom_toBottomOf="@+id/textView6"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView6"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:drawableTint="@color/white"
+            android:fontFamily="@font/amatica_sc_bold"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="@string/tap_to_enlarge_picture"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:drawableTopCompat="@drawable/tap"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/textView5"
+            app:layout_constraintStart_toEndOf="@+id/textView7"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/textView8"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="5dp"
+            android:drawableTint="@color/white"
+            android:fontFamily="@font/amatica_sc_bold"
+            android:gravity="center"
+            android:padding="5dp"
+            android:text="@string/swipe_up_to_upload_image"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            app:drawableTopCompat="@drawable/swipeup"
+            app:layout_constraintBottom_toTopOf="@+id/ok"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
+        <Button
+            android:id="@+id/ok"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:minHeight="0dp"
+            android:padding="10dp"
+            android:text="OK"
+            android:textColor="@android:color/black"
+            app:iconGravity="top"
+            app:iconTint="@color/secondaryTextColor"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
     <include
         android:id="@+id/include"
         layout="@layout/home_toolbar"

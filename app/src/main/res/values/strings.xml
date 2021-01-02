@@ -9,4 +9,8 @@
     <string name="skip_login">Skip Login</string>
     <string name="nice">Noice</string>
     <string name="no_posts_yet">No Posts Yet\nRefresh to get Posts</string>
+    <string name="swipe_left_to_skip">Swipe Left to Skip</string>
+    <string name="swipe_right_to_like">Swipe Right to Like</string>
+    <string name="swipe_up_to_upload_image">Swipe Up to Upload Image</string>
+    <string name="tap_to_enlarge_picture">Tap to Enlarge Picture</string>
 </resources>

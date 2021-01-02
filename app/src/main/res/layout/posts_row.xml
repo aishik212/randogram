@@ -8,6 +8,36 @@
     android:background="@drawable/bg_nopadding"
     android:elevation="5dp">
 
+    <FrameLayout
+        android:id="@+id/left_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:elevation="15dp"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/ic_baseline_cancel_24"
+            app:tint="@color/secondaryDarkColor" />
+    </FrameLayout>
+
+    <FrameLayout
+        android:id="@+id/right_overlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#80000000"
+        android:elevation="15dp"
+        android:visibility="visible">
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            app:srcCompat="@drawable/ic_baseline_thumb_up_24"
+            app:tint="@color/secondaryDarkColor" />
+    </FrameLayout>
+
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/constraintLayout"
         android:layout_width="0dp"
@@ -85,6 +115,7 @@
             android:layout_marginTop="5dp"
             android:layout_marginBottom="5dp"
             android:cropToPadding="true"
+            android:visibility="invisible"
             android:foregroundGravity="center"
             android:padding="2dp"
             android:scaleType="fitCenter"
