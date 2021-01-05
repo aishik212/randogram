@@ -51,10 +51,9 @@ android {
         }
         internal {
             signingConfig signingConfigs.rgraminternal
-            debuggable true
             minifyEnabled true
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
             multiDexEnabled true
-            ext.enableCrashlytics = false
         }
     }
     compileOptions {

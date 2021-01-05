@@ -14,13 +14,16 @@
         android:layout_height="match_parent"
         android:background="#80000000"
         android:elevation="15dp"
-        android:visibility="visible">
+        android:visibility="visible"
+        tools:visibility="gone">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="visible"
             app:srcCompat="@drawable/ic_baseline_cancel_24"
-            app:tint="@color/secondaryDarkColor" />
+            app:tint="@color/secondaryDarkColor"
+            tools:visibility="gone" />
     </FrameLayout>
 
     <FrameLayout
@@ -29,13 +32,16 @@
         android:layout_height="match_parent"
         android:background="#80000000"
         android:elevation="15dp"
-        android:visibility="visible">
+        android:visibility="visible"
+        tools:visibility="gone">
 
         <ImageView
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:visibility="visible"
             app:srcCompat="@drawable/ic_baseline_thumb_up_24"
-            app:tint="@color/secondaryDarkColor" />
+            app:tint="@color/secondaryDarkColor"
+            tools:visibility="gone" />
     </FrameLayout>
 
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -47,25 +53,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
-
-        <View
-            android:id="@+id/view2"
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:background="@color/primaryTextColor"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/time_row_tv" />
-
-        <View
-            android:id="@+id/view"
-            android:layout_width="0dp"
-            android:layout_height="2dp"
-            android:layout_marginBottom="7dp"
-            android:background="@color/primaryTextColor"
-            app:layout_constraintBottom_toTopOf="@+id/niceCl"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
 
         <TextView
             android:id="@+id/name_row_tv"
@@ -108,58 +95,40 @@
             app:layout_constraintTop_toBottomOf="@+id/name_row_tv"
             tools:text="@tools:sample/cities" />
 
+        <View
+            android:id="@+id/view2"
+            android:layout_width="0dp"
+            android:layout_height="2dp"
+            android:background="@color/primaryTextColor"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/time_row_tv" />
+
         <ImageView
             android:id="@+id/post_imv"
             android:layout_width="0dp"
             android:layout_height="0dp"
-            android:layout_marginTop="5dp"
-            android:layout_marginBottom="5dp"
             android:cropToPadding="true"
-            android:visibility="invisible"
             android:foregroundGravity="center"
-            android:padding="2dp"
             android:scaleType="fitCenter"
+            android:visibility="invisible"
             app:layout_constraintBottom_toTopOf="@+id/view"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/view2"
-            app:layout_constraintVertical_bias="0.0"
-            app:srcCompat="@drawable/ic_baseline_sync_24" />
+            app:srcCompat="@drawable/ic_baseline_sync_24"
+            tools:srcCompat="@tools:sample/backgrounds/scenic"
+            tools:visibility="visible" />
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/niceCl"
+        <View
+            android:id="@+id/view"
             android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_margin="5dp"
-            android:elevation="2dp"
-            android:foregroundGravity="center_vertical"
+            android:layout_height="2dp"
+            android:background="@color/primaryTextColor"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-
-            <ImageView
-                android:id="@+id/nice_imv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="3dp"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/ic_baseline_add_24"
-                app:tint="#000000" />
-
-            <TextView
-                android:id="@+id/nice_tv"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_margin="3dp"
-                android:fontFamily="@font/alegreya_sans_sc_medium"
-                android:text="Nice"
-                app:layout_constraintBottom_toBottomOf="@+id/nice_imv"
-                app:layout_constraintStart_toEndOf="@+id/nice_imv"
-                app:layout_constraintTop_toTopOf="@+id/nice_imv" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            app:layout_constraintStart_toStartOf="parent" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -182,6 +151,17 @@
             app:icon="@drawable/ic_baseline_cancel_24"
             app:iconGravity="top"
             app:iconTint="?attr/colorError" />
+
+        <Button
+            android:id="@+id/nice_btn"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:text="0 Likes"
+            android:textColor="@android:color/black"
+            app:iconGravity="top" />
 
         <Button
             android:id="@+id/like"

@@ -86,26 +86,29 @@ class HomeFragment : Fragment() {
                         alterVisibilityPosts(activity, false)
                     }
                     val liked = Direction.Right
-                    val tag = v?.tag as DatabaseReference
-                    if (direction == liked) {
-                        val child = MainActivity.getDBRef(requireContext(), "likes")
-                            .child(tag.key.toString())
-                        child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
-                            .setValue("")
-                            .addOnSuccessListener {
-                                child.addListenerForSingleValueEvent(
-                                    object : ValueEventListener {
-                                        override fun onDataChange(snapshot: DataSnapshot) {
-                                            val niceCount = snapshot.childrenCount
-                                            tag.child("like").setValue(niceCount)
-                                            Log.d("texts", "onDataChange: $snapshot")
-                                        }
+                    val tag1 = v?.tag
+                    if (tag1 != null) {
+                        val tag = tag1 as DatabaseReference
+                        if (direction == liked) {
+                            val child = MainActivity.getDBRef(requireContext(), "likes")
+                                .child(tag.key.toString())
+                            child.child(FirebaseAuth.getInstance().currentUser?.uid + "")
+                                .setValue("")
+                                .addOnSuccessListener {
+                                    child.addListenerForSingleValueEvent(
+                                        object : ValueEventListener {
+                                            override fun onDataChange(snapshot: DataSnapshot) {
+                                                val niceCount = snapshot.childrenCount
+                                                tag.child("like").setValue(niceCount)
+                                                Log.d("texts", "onDataChange: $snapshot")
+                                            }
 
-                                        override fun onCancelled(error: DatabaseError) {
+                                            override fun onCancelled(error: DatabaseError) {
 
-                                        }
-                                    })
-                            }
+                                            }
+                                        })
+                                }
+                        }
                     }
                 }
 
@@ -142,6 +145,7 @@ class HomeFragment : Fragment() {
             cardStackLayoutManager.setVisibleCount(3)
             cardStackLayoutManager.setMaxDegree(0F)
             cardStackLayoutManager.setTranslationInterval(12F)
+            cardStackLayoutManager.setSwipeThreshold(0.15F)
             cardStackLayoutManager.setOverlayInterpolator(AccelerateInterpolator())
             cardStackLayoutManager.setStackFrom(StackFrom.Right)
             cardStackView.layoutManager = cardStackLayoutManager
@@ -182,7 +186,7 @@ class HomeFragment : Fragment() {
     }
 
     companion object {
-        lateinit var postList: ArrayList<HashMap<String, Any>>
+        lateinit var postList: ArrayList<HashMap<String, Any>?>
 
         fun swipeLike(cardStackLayoutManager: CardStackLayoutManager, posts_rv: CardStackView) {
             val setting = SwipeAnimationSetting.Builder()
@@ -223,7 +227,12 @@ class HomeFragment : Fragment() {
                         hmap["time"] = time
                         hmap["reference"] = it.ref
                         if (hmap.keys.size >= 4) {
-                            postList.add(hmap)
+                            if (postList.size % 5 == 0) {
+                                postList.add(null)
+                                postList.add(hmap)
+                            } else {
+                                postList.add(hmap)
+                            }
                         }
                     }
                     postList.reverse()

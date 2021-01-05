@@ -4,6 +4,8 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
+import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +16,7 @@ import android.widget.ImageView
 import android.widget.TextView
 import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.content.ContextCompat
+import androidx.core.graphics.drawable.DrawableCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.google.firebase.auth.FirebaseAuth
@@ -31,8 +34,9 @@ import com.yuyakaido.android.cardstackview.CardStackView
 import org.json.JSONObject
 import java.io.File
 
+
 class PostAdapter(
-    private val posts: ArrayList<HashMap<String, Any>>,
+    private val posts: ArrayList<HashMap<String, Any>?>,
     private val context: Context,
     private val activity: Activity,
     private val cardStackLayoutManager: CardStackLayoutManager,
@@ -40,18 +44,23 @@ class PostAdapter(
 ) :
 
     RecyclerView.Adapter<PostAdapter.ViewHolder>() {
+    override fun getItemViewType(position: Int): Int {
+        return if (posts[position] == null) {
+            1
+        } else {
+            0
+        }
+    }
 
     class ViewHolder(v: View) : RecyclerView.ViewHolder(v) {
         private var nameTv: TextView = v.findViewById(R.id.name_row_tv)
         private var timeTv: TextView = v.findViewById(R.id.time_row_tv)
-        private var niceTv: TextView = v.findViewById(R.id.nice_tv)
-        private var niceCl: ConstraintLayout = v.findViewById(R.id.niceCl)
         private var postTopCL: ConstraintLayout = v.findViewById(R.id.postTopCL)
         private var postImv: ImageView = v.findViewById(R.id.post_imv)
-        private var niceImv: ImageView = v.findViewById(R.id.nice_imv)
         private var moreImageView: ImageButton = v.findViewById(R.id.more_menu_btn)
-        private var like: Button = v.findViewById(R.id.like)
-        private var skip: Button = v.findViewById(R.id.skip)
+        var like: Button = v.findViewById(R.id.like)
+        var skip: Button = v.findViewById(R.id.skip)
+        var nicebtn: Button = v.findViewById(R.id.nice_btn)
 
 
         fun bind(
@@ -96,23 +105,6 @@ class PostAdapter(
                     .into(postImv)
             }
             postTopCL.tag = ref
-            niceCl.setOnClickListener {
-                child.child(FirebaseAuth.getInstance().currentUser?.uid + "").setValue("")
-                    .addOnSuccessListener {
-                        child.addListenerForSingleValueEvent(
-                            object : ValueEventListener {
-                                override fun onDataChange(snapshot: DataSnapshot) {
-                                    val niceCount = snapshot.childrenCount
-                                    ref.child("like").setValue(niceCount)
-                                    updateLikeTop(child, niceCount.toString(), context)
-                                }
-
-                                override fun onCancelled(error: DatabaseError) {
-
-                                }
-                            })
-                    }
-            }
             postImv.setOnClickListener {
                 val i = Intent(context, photoViewerActivity::class.java)
                 val location = hashMap["location"]
@@ -143,14 +135,12 @@ class PostAdapter(
                                 updateLikes(
                                     niceness.toInt(),
                                     context,
-                                    niceImv,
                                     true
                                 )
                             } else {
                                 updateLikes(
                                     niceness.toInt(),
                                     context,
-                                    niceImv,
                                     false
                                 )
                             }
@@ -160,7 +150,6 @@ class PostAdapter(
                             updateLikes(
                                 niceness.toInt(),
                                 context,
-                                niceImv,
                                 false
                             )
                         }
@@ -170,49 +159,41 @@ class PostAdapter(
         private fun updateLikes(
             niceCount: Int,
             context: Context,
-            niceImv: ImageView,
             likedByUser: Boolean
         ) {
             if (!likedByUser) {
-                niceTv.text = niceCount.toString()
-                niceImv.setImageDrawable(
-                    ContextCompat.getDrawable(
-                        context,
-                        R.drawable.ic_baseline_add_24
-                    )
-                )
+                if (niceCount == 1) {
+                    nicebtn.text = "$niceCount Like"
+                } else {
+                    nicebtn.text = "$niceCount Likes"
+                }
             } else {
+                like.text = "Liked"
                 when {
                     niceCount == 69 -> {
-                        niceTv.text = context.getString(R.string.nice)
-                        niceImv.setImageDrawable(
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.ic_baseline_favorite_24
-                            )
+                        nicebtn.text = "Noice"
+                        var drawable: Drawable? = ContextCompat.getDrawable(
+                            context,
+                            R.drawable.ic_baseline_favorite_24
                         )
+                        drawable = setDTint(drawable, Color.parseColor("#F60041"))
+                        nicebtn.setCompoundDrawables(null, drawable, null, null)
                     }
-                    niceCount < 69 -> {
-                        niceTv.text = niceCount.toString()
-                        niceImv.setImageDrawable(
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.ic_baseline_thumb_up_24
-                            )
-                        )
-                    }
-                    niceCount > 69 -> {
-                        niceTv.text = niceCount.toString()
-                        niceImv.setImageDrawable(
-                            ContextCompat.getDrawable(
-                                context,
-                                R.drawable.ic_baseline_thumb_up_24
-                            )
-                        )
+                    (niceCount < 69 || niceCount > 69) -> {
+                        if (niceCount == 1) {
+                            nicebtn.text = "$niceCount Like"
+                        } else {
+                            nicebtn.text = "$niceCount Likes"
+                        }
                     }
                 }
-
             }
+        }
+
+        private fun setDTint(drawable: Drawable?, color: Int): Drawable? {
+            DrawableCompat.wrap(drawable!!)
+            DrawableCompat.setTint(drawable, color)
+            return drawable
         }
 
         private fun convertLongToDuration(time: Long): String {
@@ -242,38 +223,53 @@ class PostAdapter(
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val view = LayoutInflater.from(parent.context).inflate(R.layout.posts_row, parent, false)
+        val view: View = if (viewType == 0) {
+            LayoutInflater.from(parent.context).inflate(R.layout.posts_row, parent, false)
+        } else {
+            LayoutInflater.from(parent.context).inflate(R.layout.posts_native_ad, parent, false)
+
+        }
         return ViewHolder(view)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val hashMap = posts[position]
-        val uid = hashMap["uid"]
-        val reference: DatabaseReference = hashMap["reference"] as DatabaseReference
-        val pref = context.getSharedPreferences("users", 0)
-        if (pref.contains("uid")) {
-            val userRawData = pref.getString("uid", "")
-            continueWithUserData(JSONObject(userRawData.toString()), hashMap, holder, reference)
-        } else {
-            MainActivity.getDBRef(context, "users").child(uid.toString())
-                .addListenerForSingleValueEvent(object :
-                    ValueEventListener {
-                    override fun onDataChange(snapshot: DataSnapshot) {
-                        if (snapshot.value != null) {
-                            val jsonObject = JSONObject()
-                            snapshot.children.forEach {
-                                jsonObject.put("${it.key}", it.value)
+        if (hashMap != null) {
+            val uid = hashMap["uid"]
+            val reference: DatabaseReference = hashMap["reference"] as DatabaseReference
+            val pref = context.getSharedPreferences("users", 0)
+            if (pref.contains("uid")) {
+                val userRawData = pref.getString("uid", "")
+                continueWithUserData(JSONObject(userRawData.toString()), hashMap, holder, reference)
+            } else {
+                MainActivity.getDBRef(context, "users").child(uid.toString())
+                    .addListenerForSingleValueEvent(object :
+                        ValueEventListener {
+                        override fun onDataChange(snapshot: DataSnapshot) {
+                            if (snapshot.value != null) {
+                                val jsonObject = JSONObject()
+                                snapshot.children.forEach {
+                                    jsonObject.put("${it.key}", it.value)
+                                }
+                                continueWithUserData(jsonObject, hashMap, holder, reference)
+                            } else {
+                                continueWithUserData(null, hashMap, holder, reference)
                             }
-                            continueWithUserData(jsonObject, hashMap, holder, reference)
-                        } else {
-                            continueWithUserData(null, hashMap, holder, reference)
                         }
-                    }
 
-                    override fun onCancelled(error: DatabaseError) {
+                        override fun onCancelled(error: DatabaseError) {
 
-                    }
-                })
+                        }
+                    })
+            }
+        } else {
+            //inflate ad
+            holder.skip.setOnClickListener {
+                HomeFragment.swipeSkip(cardStackLayoutManager, posts_rv)
+            }
+            holder.like.setOnClickListener {
+                HomeFragment.swipeLike(cardStackLayoutManager, posts_rv)
+            }
         }
     }
 
