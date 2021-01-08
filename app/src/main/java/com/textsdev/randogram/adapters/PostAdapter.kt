@@ -162,6 +162,13 @@ class PostAdapter(
             likedByUser: Boolean
         ) {
             if (!likedByUser) {
+                like.text = "Like"
+                var drawable: Drawable? = ContextCompat.getDrawable(
+                    context,
+                    R.drawable.ic_outline_thumb_up_alt_24
+                )
+                drawable = setDTint(drawable, Color.BLACK)
+                like.setCompoundDrawablesWithIntrinsicBounds(null, drawable, null, null)
                 if (niceCount == 1) {
                     nicebtn.text = "$niceCount Like"
                 } else {
@@ -177,7 +184,7 @@ class PostAdapter(
                             R.drawable.ic_baseline_favorite_24
                         )
                         drawable = setDTint(drawable, Color.parseColor("#F60041"))
-                        nicebtn.setCompoundDrawables(null, drawable, null, null)
+                        nicebtn.setCompoundDrawablesWithIntrinsicBounds(null, drawable, null, null)
                     }
                     (niceCount < 69 || niceCount > 69) -> {
                         if (niceCount == 1) {
@@ -238,8 +245,8 @@ class PostAdapter(
             val uid = hashMap["uid"]
             val reference: DatabaseReference = hashMap["reference"] as DatabaseReference
             val pref = context.getSharedPreferences("users", 0)
-            if (pref.contains("uid")) {
-                val userRawData = pref.getString("uid", "")
+            if (pref.contains(uid.toString())) {
+                val userRawData = pref.getString(uid.toString(), "")
                 continueWithUserData(JSONObject(userRawData.toString()), hashMap, holder, reference)
             } else {
                 MainActivity.getDBRef(context, "users").child(uid.toString())
@@ -251,6 +258,7 @@ class PostAdapter(
                                 snapshot.children.forEach {
                                     jsonObject.put("${it.key}", it.value)
                                 }
+                                pref.edit().putString(uid.toString(), jsonObject.toString()).apply()
                                 continueWithUserData(jsonObject, hashMap, holder, reference)
                             } else {
                                 continueWithUserData(null, hashMap, holder, reference)

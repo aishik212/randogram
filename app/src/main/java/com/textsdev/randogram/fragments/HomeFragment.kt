@@ -57,7 +57,6 @@ class HomeFragment : Fragment() {
                     val skipped = Direction.Right
                     if (ratio < 0.05) {
                         if (liked == direction) {
-                            Log.d("texts", "onCardDragging: liked")
                             if (!shownA) {
                                 Toast.makeText(
                                     requireContext(),
@@ -67,7 +66,6 @@ class HomeFragment : Fragment() {
                                 shownA = true
                             }
                         } else if (skipped == direction) {
-                            Log.d("texts", "onCardDragging: skipped")
                             if (!shownB) {
                                 Toast.makeText(
                                     requireContext(),
@@ -81,7 +79,6 @@ class HomeFragment : Fragment() {
                 }
 
                 override fun onCardSwiped(direction: Direction?) {
-                    Log.d("texts", "onCardSwiped: " + direction)
                     if (posts_rv.childCount == 0) {
                         alterVisibilityPosts(activity, false)
                     }
@@ -100,7 +97,6 @@ class HomeFragment : Fragment() {
                                             override fun onDataChange(snapshot: DataSnapshot) {
                                                 val niceCount = snapshot.childrenCount
                                                 tag.child("like").setValue(niceCount)
-                                                Log.d("texts", "onDataChange: $snapshot")
                                             }
 
                                             override fun onCancelled(error: DatabaseError) {
@@ -113,11 +109,9 @@ class HomeFragment : Fragment() {
                 }
 
                 override fun onCardRewound() {
-                    Log.d("texts", "onCardRewound: ")
                 }
 
                 override fun onCardCanceled() {
-                    Log.d("texts", "onCardCanceled: ")
                 }
 
                 override fun onCardAppeared(view: View?, position: Int) {
@@ -227,15 +221,22 @@ class HomeFragment : Fragment() {
                         hmap["time"] = time
                         hmap["reference"] = it.ref
                         if (hmap.keys.size >= 4) {
-                            if (postList.size % 5 == 0) {
-                                postList.add(null)
+                            if (postList.size > 5 && postList.size % 5 == 0) {
                                 postList.add(hmap)
+                                //postList.add(0,null)
                             } else {
                                 postList.add(hmap)
                             }
                         }
                     }
                     postList.reverse()
+                    for (i in 0 until (postList.size - 1)) {
+                        if (i > 4 && i % 5 == 0) {
+                            postList.add(i, null)
+                        }
+                        Log.d("texts", "onDataChange: " + postList[i])
+                    }
+
                     checkPostAndShow(activity)
                 }
 
