@@ -180,7 +180,7 @@ class HomeFragment : Fragment() {
     }
 
     companion object {
-        lateinit var postList: ArrayList<HashMap<String, Any>?>
+        lateinit var postList: ArrayList<HashMap<String, Any?>?>
 
         fun swipeLike(cardStackLayoutManager: CardStackLayoutManager, posts_rv: CardStackView) {
             val setting = SwipeAnimationSetting.Builder()
@@ -214,11 +214,19 @@ class HomeFragment : Fragment() {
                         val uid = it.child("uid").value.toString()
                         val likes = it.child("like").value.toString()
                         val time = it.child("time").value.toString()
-                        val hmap: HashMap<String, Any> = hashMapOf()
+                        val value = it.child("caption").value
+                        val caption: String?
+                        if (value != null) {
+                            caption = value.toString()
+                        } else {
+                            caption = null
+                        }
+                        val hmap: HashMap<String, Any?> = hashMapOf()
                         hmap["location"] = location
                         hmap["uid"] = uid
                         hmap["likes"] = likes
                         hmap["time"] = time
+                        hmap["caption"] = caption
                         hmap["reference"] = it.ref
                         if (hmap.keys.size >= 4) {
                             if (postList.size > 5 && postList.size % 5 == 0) {

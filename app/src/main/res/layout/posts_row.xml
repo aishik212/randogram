@@ -112,14 +112,30 @@
             android:foregroundGravity="center"
             android:scaleType="fitCenter"
             android:visibility="invisible"
-            app:layout_constraintBottom_toTopOf="@+id/view"
+            app:layout_constraintTop_toBottomOf="@+id/view2"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="1.0"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/view2"
+            app:layout_constraintBottom_toTopOf="@+id/caption_tv"
             app:srcCompat="@drawable/ic_baseline_sync_24"
             tools:srcCompat="@tools:sample/backgrounds/scenic"
             tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/caption_tv"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_margin="1dp"
+            android:background="@color/secondaryColor"
+            android:ellipsize="end"
+            android:maxLines="2"
+            android:padding="5dp"
+            android:textAllCaps="false"
+            android:textSize="18sp"
+            app:layout_constraintBottom_toTopOf="@+id/view"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            tools:text="@tools:sample/lorem/random" />
 
         <View
             android:id="@+id/view"

@@ -65,29 +65,49 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:elevation="2dp"
-                android:orientation="horizontal"
+                android:orientation="vertical"
+                android:padding="5dp"
                 app:layout_constraintBottom_toBottomOf="parent">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/upload_image_button"
-                    style="@style/TextAppearance.App.Button"
+
+                <EditText
+                    android:id="@+id/caption_et"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="Upload Image"
-                    app:icon="@drawable/ic_baseline_cloud_upload_24"
-                    app:iconTint="@color/primaryTextColor" />
+                    android:background="@drawable/button_bg"
+                    android:ems="10"
+                    android:hint="Edit Caption"
+                    android:inputType="textPersonName"
+                    android:padding="10dp" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/cancel_image_button"
-                    style="@style/TextAppearance.App.Button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="Cancel"
-                    app:icon="@drawable/ic_baseline_cancel_24"
-                    app:iconTint="@android:color/holo_red_dark" />
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/upload_image_button"
+                        style="@style/TextAppearance.App.Button"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="2dp"
+                        android:layout_weight="1"
+                        android:text="Upload Image"
+                        app:icon="@drawable/ic_baseline_cloud_upload_24"
+                        app:iconTint="@color/primaryTextColor" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/cancel_image_button"
+                        style="@style/TextAppearance.App.Button"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="2dp"
+                        android:text="Cancel"
+                        app:icon="@drawable/ic_baseline_cancel_24"
+                        app:iconTint="@android:color/holo_red_dark" />
+
+                </LinearLayout>
 
             </LinearLayout>
 
@@ -98,6 +118,21 @@
                 android:elevation="1dp"
                 android:orientation="horizontal"
                 app:layout_constraintBottom_toBottomOf="parent">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/galleryButton"
+                    style="@style/TextAppearance.App.Button"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="2dp"
+                    android:layout_weight="1"
+                    android:text="@string/upload_from_gallery"
+                    app:icon="@drawable/ic_baseline_insert_photo_24"
+                    app:iconTint="@color/primaryTextColor"
+                    app:layout_constraintBottom_toBottomOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintTop_toBottomOf="@+id/textView" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/cameraButton"
@@ -114,20 +149,6 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@+id/textView" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/galleryButton"
-                    style="@style/TextAppearance.App.Button"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:text="@string/upload_from_gallery"
-                    app:icon="@drawable/ic_baseline_insert_photo_24"
-                    app:iconTint="@color/primaryTextColor"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/textView" />
             </LinearLayout>
         </androidx.constraintlayout.widget.ConstraintLayout>
 

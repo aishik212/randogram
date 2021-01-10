@@ -12,10 +12,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Button
-import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.Toast
+import android.widget.*
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
@@ -48,6 +45,7 @@ class UploadImageFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         uploadL1 = upload_ll
+        captionET = caption_et
         uploadL2 = upload_ll_2
         uploadL3 = upload_ll_3
         upload_btn = upload_image_button
@@ -102,6 +100,7 @@ class UploadImageFragment : Fragment() {
         const val CAMERA_PERMISSION = 100
         const val STORAGE_PERMISSION = 101
         var uploadL1: LinearLayout? = null
+        var captionET: EditText? = null
         var uploadL2: LinearLayout? = null
         var uploadL3: LinearLayout? = null
         var upload_btn: Button? = null
@@ -236,9 +235,18 @@ class UploadImageFragment : Fragment() {
                     ).show()
                 }.addOnSuccessListener { uploadTask ->
                     val postsRef = MainActivity.getDBRef(activity, "posts")
-                    val userMap: HashMap<String, Any> = hashMapOf()
+                    val userMap: HashMap<String, Any?> = hashMapOf()
                     userMap["uid"] = uid + ""
                     userMap["location"] = uploadTask.storage.path
+                    if (captionET != null && captionET!!.text != null) {
+                        if (captionET!!.text.trim() == "") {
+                            userMap["caption"] = null
+                        } else {
+                            userMap["caption"] = captionET!!.text.toString()
+                        }
+                    } else {
+                        userMap["caption"] = null
+                    }
                     userMap["like"] = 0
                     userMap["time"] = ServerValue.TIMESTAMP
                     postsRef.push().setValue(userMap).addOnCompleteListener {

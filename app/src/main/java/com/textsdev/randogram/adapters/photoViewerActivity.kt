@@ -20,6 +20,7 @@ class photoViewerActivity : AppCompatActivity(), View.OnClickListener {
     private var file: File? = null
 
     private var fname: String? = null
+    private var caption: String? = null
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         if (requestCode == DownloadFiles.CREATE_FILE && resultCode == RESULT_OK && data != null) {
@@ -42,6 +43,13 @@ class photoViewerActivity : AppCompatActivity(), View.OnClickListener {
         )
         if (intent != null) {
             fname = intent.getStringExtra("fileName")
+            caption = intent.getStringExtra("caption")
+            if (caption != null) {
+                caption_tv.visibility = View.VISIBLE
+                caption_tv.text = caption
+            } else {
+                caption_tv.visibility = View.GONE
+            }
             file = File(cacheDir.absolutePath + "" + fname)
             if (file != null) {
                 val bmp = BitmapFactory.decodeFile(file?.absolutePath)

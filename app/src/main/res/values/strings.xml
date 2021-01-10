@@ -13,4 +13,5 @@
     <string name="swipe_right_to_like">Swipe Right to Like</string>
     <string name="swipe_up_to_upload_image">Swipe Up to Upload Image</string>
     <string name="tap_to_enlarge_picture">Tap to Enlarge Picture</string>
+    <string name="add_a_caption">Add a Caption</string>
 </resources>

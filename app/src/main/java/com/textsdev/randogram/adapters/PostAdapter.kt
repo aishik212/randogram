@@ -36,7 +36,7 @@ import java.io.File
 
 
 class PostAdapter(
-    private val posts: ArrayList<HashMap<String, Any>?>,
+    private val posts: ArrayList<HashMap<String, Any?>?>,
     private val context: Context,
     private val activity: Activity,
     private val cardStackLayoutManager: CardStackLayoutManager,
@@ -61,12 +61,13 @@ class PostAdapter(
         var like: Button = v.findViewById(R.id.like)
         var skip: Button = v.findViewById(R.id.skip)
         var nicebtn: Button = v.findViewById(R.id.nice_btn)
+        var caption_tv: TextView = v.findViewById(R.id.caption_tv)
 
 
         fun bind(
             absolutePath: String?,
             UName: String,
-            hashMap: java.util.HashMap<String, Any>,
+            hashMap: java.util.HashMap<String, Any?>,
             context: Context,
             activity: Activity,
             cardStackLayoutManager: CardStackLayoutManager,
@@ -74,6 +75,13 @@ class PostAdapter(
         ) {
             nameTv.text = UName
             val time = hashMap["time"].toString()
+            val caption = hashMap["caption"]
+            if (caption != null) {
+                caption_tv.visibility = View.VISIBLE
+                caption_tv.text = caption.toString()
+            } else {
+                caption_tv.visibility = View.GONE
+            }
             timeTv.text = convertLongToDuration(time.toLong())
             val ref = hashMap["reference"] as DatabaseReference
             val niceness = hashMap["likes"].toString()
@@ -110,6 +118,9 @@ class PostAdapter(
                 val location = hashMap["location"]
                 if (location != null) {
                     i.putExtra("fileName", location.toString())
+                    if (caption != null) {
+                        i.putExtra("caption", caption.toString())
+                    }
                     context.startActivity(i)
                 }
             }
@@ -283,7 +294,7 @@ class PostAdapter(
 
     private fun continueWithUserData(
         userRawData: JSONObject?,
-        hashMap: java.util.HashMap<String, Any>,
+        hashMap: java.util.HashMap<String, Any?>,
         holder: ViewHolder,
         reference: DatabaseReference
     ) {
@@ -326,7 +337,7 @@ class PostAdapter(
         file: File,
         holder: ViewHolder,
         UName: String,
-        hashMap: java.util.HashMap<String, Any>,
+        hashMap: java.util.HashMap<String, Any?>,
         reference: DatabaseReference
     ) {
         FirebaseStorage.getInstance().getReference(location).getFile(file)
