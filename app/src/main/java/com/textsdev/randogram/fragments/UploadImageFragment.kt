@@ -27,36 +27,39 @@ import com.textsdev.randogram.Homescreen.Companion.SELECT_GALLERY
 import com.textsdev.randogram.Homescreen.Companion.SELECT_IMAGE
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
+import com.textsdev.randogram.databinding.HomeLayoutBinding
+import com.textsdev.randogram.databinding.UploadImageFragmentLayoutBinding
 import com.textsdev.randogram.fragments.HomeFragment.Companion.fetchData
-import kotlinx.android.synthetic.main.home_layout.*
-import kotlinx.android.synthetic.main.upload_image_fragment_layout.*
 import java.io.*
 
 
 class UploadImageFragment : Fragment() {
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.upload_image_fragment_layout, container, false)
+        uploadImageFragmentLayoutBinding =
+            UploadImageFragmentLayoutBinding.inflate(layoutInflater, container, false)
+        return uploadImageFragmentLayoutBinding.root
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        uploadL1 = upload_ll
-        captionET = caption_et
-        uploadL2 = upload_ll_2
-        uploadL3 = upload_ll_3
-        upload_btn = upload_image_button
-        upload_prog = upload_progress
+        uploadL1 = uploadImageFragmentLayoutBinding.uploadLl
+        captionET = uploadImageFragmentLayoutBinding.captionEt
+        uploadL2 = uploadImageFragmentLayoutBinding.uploadLl2
+        uploadL3 = uploadImageFragmentLayoutBinding.uploadLl3
+        upload_btn = uploadImageFragmentLayoutBinding.uploadImageButton
+        upload_prog = uploadImageFragmentLayoutBinding.uploadProgress
         showUploadOptions()
     }
 
 
     override fun onStart() {
         super.onStart()
-        cameraButton.setOnClickListener {
+        uploadImageFragmentLayoutBinding.cameraButton.setOnClickListener {
             if (ContextCompat.checkSelfPermission(
                     requireContext(),
                     Manifest.permission.CAMERA
@@ -73,13 +76,13 @@ class UploadImageFragment : Fragment() {
             }
         }
 
-        galleryButton.setOnClickListener {
+        uploadImageFragmentLayoutBinding.galleryButton.setOnClickListener {
             val pickIntent =
                 Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
             activity?.startActivityForResult(pickIntent, SELECT_GALLERY)
         }
 
-        cancel_image_button.setOnClickListener {
+        uploadImageFragmentLayoutBinding.cancelImageButton.setOnClickListener {
             resetUploadPage(requireActivity())
         }
     }
@@ -105,6 +108,7 @@ class UploadImageFragment : Fragment() {
         var uploadL3: LinearLayout? = null
         var upload_btn: Button? = null
         var upload_prog: LinearProgressIndicator? = null
+        private lateinit var uploadImageFragmentLayoutBinding: UploadImageFragmentLayoutBinding
 
         private fun resetUploadPage(activity: Activity) {
             showUploadOptions()
@@ -113,7 +117,7 @@ class UploadImageFragment : Fragment() {
                     activity,
                     R.drawable.ic_baseline_cloud_upload_24
                 )
-            ).centerInside().into(activity.image_viewer)
+            ).centerInside().into(uploadImageFragmentLayoutBinding.imageViewer)
             fetchData(activity.applicationContext, activity)
         }
 
@@ -176,7 +180,12 @@ class UploadImageFragment : Fragment() {
         }
 
 
-        fun setImage(imageBitmap: Bitmap, image_viewer: ImageView, activity: Activity) {
+        fun setImage(
+            imageBitmap: Bitmap,
+            image_viewer: ImageView,
+            activity: Activity,
+            binding: HomeLayoutBinding
+        ) {
             val newBMP = addWMARK(activity, imageBitmap)
             val f: File?
             if (newBMP != null) {
@@ -187,7 +196,7 @@ class UploadImageFragment : Fragment() {
             if (f != null) {
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
-                initUpload(f, activity)
+                initUpload(f, activity, binding)
             } else {
                 Glide.with(activity).load(
                     ContextCompat.getDrawable(
@@ -217,7 +226,7 @@ class UploadImageFragment : Fragment() {
             return imageBMPW
         }
 
-        private fun initUpload(f: File, activity: Activity) {
+        private fun initUpload(f: File, activity: Activity, binding: HomeLayoutBinding) {
             upload_btn?.setOnClickListener {
                 showProgress()
                 val pkgname = MainActivity.getPkgName(activity)
@@ -251,7 +260,7 @@ class UploadImageFragment : Fragment() {
                     userMap["time"] = ServerValue.TIMESTAMP
                     postsRef.push().setValue(userMap).addOnCompleteListener {
                         Toast.makeText(activity, "Upload Successful", Toast.LENGTH_SHORT).show()
-                        updateUI(activity)
+                        updateUI(activity, binding)
                     }.addOnFailureListener {
                         uploadTask.storage.delete()
                         Toast.makeText(activity, "Upload Failed Try Again", Toast.LENGTH_SHORT)
@@ -273,13 +282,18 @@ class UploadImageFragment : Fragment() {
             }
         }
 
-        private fun updateUI(activity: Activity) {
-            activity.home_viewpager.setCurrentItem(0, true)
+        private fun updateUI(activity: Activity, binding: HomeLayoutBinding) {
+            binding.homeViewpager.setCurrentItem(0, true)
             resetUploadPage(activity)
         }
 
 
-        fun setImage(imageBitmap: Uri, image_viewer: ImageView, activity: Activity) {
+        fun setImage(
+            imageBitmap: Uri,
+            image_viewer: ImageView,
+            activity: Activity,
+            binding: HomeLayoutBinding
+        ) {
             var f: File? = convertToFile(imageBitmap, activity)
             if (f != null) {
                 val bmp = BitmapFactory.decodeFile(f.absolutePath)
@@ -292,7 +306,7 @@ class UploadImageFragment : Fragment() {
                 Glide.with(activity).load(f).centerInside().into(image_viewer)
                 showUploadButton()
                 if (f != null) {
-                    initUpload(f, activity)
+                    initUpload(f, activity, binding)
                 }
             }
         }
@@ -328,10 +342,10 @@ class UploadImageFragment : Fragment() {
         }
 
         private fun resize(image: Bitmap, maxWidth: Int, maxHeight: Int): Bitmap? {
-            var image = image
+            var imageVar = image
             return if (maxHeight > 0 && maxWidth > 0) {
-                val width = image.width
-                val height = image.height
+                val width = imageVar.width
+                val height = imageVar.height
                 val ratioBitmap = width.toFloat() / height.toFloat()
                 val ratioMax = maxWidth.toFloat() / maxHeight.toFloat()
                 var finalWidth = maxWidth
@@ -341,10 +355,10 @@ class UploadImageFragment : Fragment() {
                 } else {
                     finalHeight = (maxWidth.toFloat() / ratioBitmap).toInt()
                 }
-                image = Bitmap.createScaledBitmap(image, finalWidth, finalHeight, true)
-                image
+                imageVar = Bitmap.createScaledBitmap(imageVar, finalWidth, finalHeight, true)
+                imageVar
             } else {
-                image
+                imageVar
             }
         }
 
@@ -371,4 +385,5 @@ class UploadImageFragment : Fragment() {
             return file
         }
     }
+
 }

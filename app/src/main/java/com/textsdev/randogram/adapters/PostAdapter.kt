@@ -299,10 +299,10 @@ class PostAdapter(
         reference: DatabaseReference
     ) {
         var uname = "Anonymous"
-        var dp: String? = null
+        //var dp: String? = null
         if (userRawData != null) {
             uname = userRawData.get("name").toString()
-            dp = userRawData.get("image").toString()
+            //dp = userRawData.get("image").toString()
         }
         val location: String = hashMap["location"].toString()
         val file = File("${context.cacheDir}$location")

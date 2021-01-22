@@ -25,17 +25,21 @@ import com.google.firebase.database.ValueEventListener
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
 import com.textsdev.randogram.adapters.PostAdapter
+import com.textsdev.randogram.databinding.HomeFragmentLayoutBinding
 import com.yuyakaido.android.cardstackview.*
-import kotlinx.android.synthetic.main.home_fragment_layout.*
 
 
 class HomeFragment : Fragment() {
+
+    private lateinit var binding: HomeFragmentLayoutBinding
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.home_fragment_layout, container, false)
+        binding = HomeFragmentLayoutBinding.inflate(layoutInflater, container, false)
+        return binding.root
     }
 
     var shownA = false
@@ -79,7 +83,7 @@ class HomeFragment : Fragment() {
                 }
 
                 override fun onCardSwiped(direction: Direction?) {
-                    if (posts_rv.childCount == 0) {
+                    if (binding.postsRv.childCount == 0) {
                         alterVisibilityPosts(activity, false)
                     }
                     val liked = Direction.Right
@@ -148,7 +152,7 @@ class HomeFragment : Fragment() {
                 requireContext(),
                 requireActivity(),
                 cardStackLayoutManager,
-                posts_rv
+                binding.postsRv
             )
             cardStackView.adapter = postAdapter
         }

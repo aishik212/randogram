@@ -9,14 +9,17 @@ import androidx.appcompat.app.AppCompatActivity
 import com.bumptech.glide.Glide
 import com.textsdev.randogram.MainActivity
 import com.textsdev.randogram.R
+import com.textsdev.randogram.databinding.PhotoViewerLayoutBinding
 import com.textsdev.randogram.fragments.UploadImageFragment
 import com.textsdev.randogram.utilities.DownloadFiles
 import com.textsdev.randogram.utilities.DownloadFiles.Companion.downloadToDownload
 import com.textsdev.randogram.utilities.DownloadFiles.Companion.writeFileContent
-import kotlinx.android.synthetic.main.photo_viewer_layout.*
 import java.io.File
 
 class photoViewerActivity : AppCompatActivity(), View.OnClickListener {
+
+    private lateinit var binding: PhotoViewerLayoutBinding;
+
     private var file: File? = null
 
     private var fname: String? = null
@@ -35,7 +38,9 @@ class photoViewerActivity : AppCompatActivity(), View.OnClickListener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.photo_viewer_layout)
+        binding = PhotoViewerLayoutBinding.inflate(layoutInflater)
+        val v: View = binding.root
+        setContentView(v)
         MainActivity.hideBar(supportActionBar)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
@@ -45,16 +50,16 @@ class photoViewerActivity : AppCompatActivity(), View.OnClickListener {
             fname = intent.getStringExtra("fileName")
             caption = intent.getStringExtra("caption")
             if (caption != null) {
-                caption_tv.visibility = View.VISIBLE
-                caption_tv.text = caption
+                binding.captionTv.visibility = View.VISIBLE
+                binding.captionTv.text = caption
             } else {
-                caption_tv.visibility = View.GONE
+                binding.captionTv.visibility = View.GONE
             }
             file = File(cacheDir.absolutePath + "" + fname)
             if (file != null) {
                 val bmp = BitmapFactory.decodeFile(file?.absolutePath)
                 val wmark = UploadImageFragment.addWMARK(this, bmp)
-                Glide.with(applicationContext).load(wmark).fitCenter().into(largeImage)
+                Glide.with(applicationContext).load(wmark).fitCenter().into(binding.largeImage)
             } else {
                 finish()
             }

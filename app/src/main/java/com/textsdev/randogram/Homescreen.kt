@@ -17,10 +17,10 @@ import com.google.firebase.auth.FirebaseUser
 import com.textsdev.randogram.MainActivity.Companion.hideBar
 import com.textsdev.randogram.MainActivity.Companion.startA
 import com.textsdev.randogram.adapters.ViewPagerAdapter
+import com.textsdev.randogram.databinding.HomeLayoutBinding
+import com.textsdev.randogram.databinding.HomeToolbarBinding
+import com.textsdev.randogram.databinding.UploadImageFragmentLayoutBinding
 import com.textsdev.randogram.fragments.UploadImageFragment.Companion.setImage
-import kotlinx.android.synthetic.main.home_layout.*
-import kotlinx.android.synthetic.main.home_toolbar.*
-import kotlinx.android.synthetic.main.upload_image_fragment_layout.*
 
 
 class Homescreen : AppCompatActivity() {
@@ -29,9 +29,13 @@ class Homescreen : AppCompatActivity() {
         super.onBackPressed()
     }
 
+    private lateinit var binding: HomeLayoutBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.home_layout)
+        binding = HomeLayoutBinding.inflate(layoutInflater)
+        val v = binding.root
+        setContentView(v)
         hideBar(supportActionBar)
         window.setFlags(
             WindowManager.LayoutParams.FLAG_SECURE,
@@ -56,8 +60,8 @@ class Homescreen : AppCompatActivity() {
 
     private fun setupViewPager() {
         val adapter = ViewPagerAdapter(this, 2)
-        home_viewpager.orientation = ViewPager2.ORIENTATION_VERTICAL
-        home_viewpager.adapter = adapter
+        binding.homeViewpager.orientation = ViewPager2.ORIENTATION_VERTICAL
+        binding.homeViewpager.adapter = adapter
     }
 
     private fun continueApp(currentUser: FirebaseUser) {
@@ -68,25 +72,25 @@ class Homescreen : AppCompatActivity() {
 
 
     private fun initNavigation() {
-        bottom_navigation.setOnNavigationItemSelectedListener {
+        binding.bottomNavigation.setOnNavigationItemSelectedListener {
             if (it.itemId == R.id.menu_home) {
-                home_viewpager.setCurrentItem(0, true)
+                binding.homeViewpager.setCurrentItem(0, true)
             } else if (it.itemId == R.id.menu_upload) {
-                home_viewpager.setCurrentItem(1, true)
+                binding.homeViewpager.setCurrentItem(1, true)
             }
             false
         }
 
-        home_viewpager.registerOnPageChangeCallback(object :
+        binding.homeViewpager.registerOnPageChangeCallback(object :
             ViewPager2.OnPageChangeCallback() {
             override fun onPageSelected(position: Int) {
                 super.onPageSelected(position)
                 when (position) {
                     1 -> {
-                        bottom_navigation.menu.findItem(R.id.menu_upload).isChecked = true
+                        binding.bottomNavigation.menu.findItem(R.id.menu_upload).isChecked = true
                     }
                     else -> {
-                        bottom_navigation.menu.findItem(R.id.menu_home).isChecked = true
+                        binding.bottomNavigation.menu.findItem(R.id.menu_home).isChecked = true
                     }
                 }
             }
@@ -94,25 +98,28 @@ class Homescreen : AppCompatActivity() {
     }
 
     private fun setDP(currentUser: FirebaseUser) {
+        val toolbarBinding = HomeToolbarBinding.inflate(layoutInflater)
         val photoUrl = currentUser.photoUrl
         if (photoUrl != null) {
-            Glide.with(this).load(photoUrl).circleCrop().into(profileDP)
+            Glide.with(this).load(photoUrl).circleCrop().into(toolbarBinding.profileDP)
         } else {
             Glide.with(this)
                 .load(ContextCompat.getDrawable(applicationContext, R.mipmap.ic_launcher))
-                .circleCrop().into(profileDP)
+                .circleCrop().into(toolbarBinding.profileDP)
         }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         Log.d("texts", "onActivityResult: $resultCode $requestCode $data ${data?.extras}")
+        val uploadImageFragmentLayoutBinding: UploadImageFragmentLayoutBinding =
+            UploadImageFragmentLayoutBinding.inflate(layoutInflater)
         if (requestCode == SELECT_IMAGE && resultCode == RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
-            setImage(imageBitmap, image_viewer, this)
+            setImage(imageBitmap, uploadImageFragmentLayoutBinding.imageViewer, this, this.binding)
         } else if (requestCode == SELECT_GALLERY && resultCode == RESULT_OK) {
             val imageBitmap = data?.data as Uri
-            setImage(imageBitmap, image_viewer, this)
+            setImage(imageBitmap, uploadImageFragmentLayoutBinding.imageViewer, this, this.binding)
 
         }
     }
@@ -161,5 +168,6 @@ class Homescreen : AppCompatActivity() {
     companion object {
         const val SELECT_IMAGE = 548
         const val SELECT_GALLERY = 549
+
     }
 }

@@ -18,7 +18,7 @@ import com.google.firebase.ktx.Firebase
 import com.textsdev.randogram.MainActivity.Companion.getDBRef
 import com.textsdev.randogram.MainActivity.Companion.hideBar
 import com.textsdev.randogram.MainActivity.Companion.startA
-import kotlinx.android.synthetic.main.login.*
+import com.textsdev.randogram.databinding.LoginBinding
 
 
 class Login : AppCompatActivity() {
@@ -27,9 +27,12 @@ class Login : AppCompatActivity() {
 
     private lateinit var googleSignInClient: GoogleSignInClient
 
+    private lateinit var loginBinding: LoginBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.login)
+        loginBinding = LoginBinding.inflate(layoutInflater)
+        setContentView(loginBinding.root)
         hideBar(supportActionBar)
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
@@ -37,11 +40,11 @@ class Login : AppCompatActivity() {
             .build()
         googleSignInClient = GoogleSignIn.getClient(this, gso)
 
-        glogin.setOnClickListener {
+        loginBinding.glogin.setOnClickListener {
             val signInIntent: Intent = googleSignInClient.signInIntent
             startActivityForResult(signInIntent, RC_SIGN_IN)
         }
-        alogin.setOnClickListener {
+        loginBinding.alogin.setOnClickListener {
             FirebaseAuth.getInstance().signInAnonymously()
                 .addOnCompleteListener { task ->
                     if (task.isSuccessful) {

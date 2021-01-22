@@ -15,16 +15,18 @@ import com.google.firebase.database.DatabaseReference
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
-import kotlinx.android.synthetic.main.activity_main.*
+import com.textsdev.randogram.databinding.ActivityMainBinding
 import java.util.*
 
 
 class MainActivity : AppCompatActivity() {
 
+    private lateinit var mainBinding: ActivityMainBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        mainBinding = ActivityMainBinding.inflate(layoutInflater)
+        setContentView(mainBinding.root)
         hideBar(supportActionBar)
 
         try {
@@ -37,7 +39,7 @@ class MainActivity : AppCompatActivity() {
             maintainance.removeOldImages()
             maintainance.removeLikes(applicationContext)
             maintainance.removeOldDB(applicationContext)
-            letsgo.visibility = View.GONE
+            mainBinding.letsgo.visibility = View.GONE
             Toast.makeText(this, "Welcome to RandoGram", Toast.LENGTH_SHORT).show()
             Timer().schedule(object : TimerTask() {
                 override fun run() {
@@ -49,7 +51,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }, 1000)
         } else {
-            letsgo.setOnClickListener {
+            mainBinding.letsgo.setOnClickListener {
                 val i = Intent(this, Login::class.java)
                 i.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                 startA(this, i)
