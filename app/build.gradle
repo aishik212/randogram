@@ -62,6 +62,7 @@ android {
     }
     buildFeatures {
         viewBinding true
+        mlModelBinding true
     }
 }
 apply plugin: 'com.google.firebase.crashlytics'
@@ -72,6 +73,8 @@ dependencies {
     //glide
     implementation 'com.github.bumptech.glide:glide:4.11.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
+    implementation 'org.tensorflow:tensorflow-lite-support:0.1.0-rc1'
+    implementation 'org.tensorflow:tensorflow-lite-metadata:0.1.0-rc1'
     annotationProcessor 'com.github.bumptech.glide:compiler:4.11.0'
 
     //circleoimageview

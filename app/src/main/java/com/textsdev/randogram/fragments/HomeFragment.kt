@@ -246,7 +246,6 @@ class HomeFragment : Fragment() {
                         if (i > 4 && i % 5 == 0) {
                             postList.add(i, null)
                         }
-                        Log.d("texts", "onDataChange: " + postList[i])
                     }
 
                     checkPostAndShow(activity)

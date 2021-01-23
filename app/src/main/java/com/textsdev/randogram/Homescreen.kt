@@ -19,7 +19,6 @@ import com.textsdev.randogram.MainActivity.Companion.startA
 import com.textsdev.randogram.adapters.ViewPagerAdapter
 import com.textsdev.randogram.databinding.HomeLayoutBinding
 import com.textsdev.randogram.databinding.HomeToolbarBinding
-import com.textsdev.randogram.databinding.UploadImageFragmentLayoutBinding
 import com.textsdev.randogram.fragments.UploadImageFragment.Companion.setImage
 
 
@@ -112,14 +111,12 @@ class Homescreen : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
         Log.d("texts", "onActivityResult: $resultCode $requestCode $data ${data?.extras}")
-        val uploadImageFragmentLayoutBinding: UploadImageFragmentLayoutBinding =
-            UploadImageFragmentLayoutBinding.inflate(layoutInflater)
         if (requestCode == SELECT_IMAGE && resultCode == RESULT_OK) {
             val imageBitmap = data?.extras?.get("data") as Bitmap
-            setImage(imageBitmap, uploadImageFragmentLayoutBinding.imageViewer, this, this.binding)
+            setImage(imageBitmap, this, this.binding)
         } else if (requestCode == SELECT_GALLERY && resultCode == RESULT_OK) {
             val imageBitmap = data?.data as Uri
-            setImage(imageBitmap, uploadImageFragmentLayoutBinding.imageViewer, this, this.binding)
+            setImage(imageBitmap, this, this.binding)
 
         }
     }

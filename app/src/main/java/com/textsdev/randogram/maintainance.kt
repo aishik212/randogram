@@ -50,7 +50,6 @@ class maintainance {
                                 override fun onDataChange(snapshot: DataSnapshot) {
                                     if (snapshot.value != null) {
                                         snapshot.children.forEach {
-                                            Log.d("texts", "onDataChange: " + it.value)
                                             val value = it.child("time").value
                                             if (value != null) {
                                                 val toLong = value.toString().toLongOrNull()
@@ -63,7 +62,6 @@ class maintainance {
                                                         } else {
                                                             deleteRef(it.ref)
                                                         }
-                                                        Log.d("texts", "onDataChange: $l")
                                                     }
                                                 }
                                             } else {
@@ -97,10 +95,6 @@ class maintainance {
                                     .addListenerForSingleValueEvent(object : ValueEventListener {
                                         override fun onDataChange(snapshot: DataSnapshot) {
                                             if (snapshot.value == null) {
-                                                Log.d(
-                                                    "texts",
-                                                    "onDataChange: " + likeSS.ref.removeValue()
-                                                )
                                             }
                                         }
 
