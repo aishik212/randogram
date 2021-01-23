@@ -30,7 +30,7 @@ import com.textsdev.randogram.R
 import com.textsdev.randogram.databinding.HomeLayoutBinding
 import com.textsdev.randogram.databinding.UploadImageFragmentLayoutBinding
 import com.textsdev.randogram.fragments.HomeFragment.Companion.fetchData
-import com.textsdev.randogram.ml.NSFW
+import com.textsdev.randogram.ml.Nsfwown
 import org.tensorflow.lite.DataType
 import org.tensorflow.lite.support.image.TensorImage
 import org.tensorflow.lite.support.tensorbuffer.TensorBuffer
@@ -43,7 +43,7 @@ class UploadImageFragment : Fragment() {
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
-    ): View? {
+    ): View {
         uploadImageFragmentLayoutBinding =
             UploadImageFragmentLayoutBinding.inflate(layoutInflater, container, false)
         return uploadImageFragmentLayoutBinding.root
@@ -91,12 +91,6 @@ class UploadImageFragment : Fragment() {
         }
     }
 
-
-    override fun onResume() {
-        super.onResume()
-        Log.d("texts", "onResume: ")
-    }
-
     override fun onDestroy() {
         super.onDestroy()
         Log.d("texts", "onDestroy: ")
@@ -105,7 +99,6 @@ class UploadImageFragment : Fragment() {
 
     companion object {
         const val CAMERA_PERMISSION = 100
-        const val STORAGE_PERMISSION = 101
         var uploadL1: LinearLayout? = null
         var captionET: EditText? = null
         var uploadL2: LinearLayout? = null
@@ -189,37 +182,8 @@ class UploadImageFragment : Fragment() {
             activity: Activity,
             binding: HomeLayoutBinding
         ) {
-            val newBMP = addWMARK(activity, imageBitmap)
-            val f: File?
-            val imageViewer = activity.findViewById<ImageView>(R.id.image_viewer)
-            if (newBMP != null) {
-                val isNSFW = checkNSFW1(newBMP, activity)
-                if (!isNSFW) {
-                    f = convertToFile(newBMP, activity)
-                    if (f != null) {
-                        Glide.with(activity).load(f).centerInside().into(imageViewer)
-                        showUploadButton()
-                        initUpload(f, activity, binding)
-                    } else {
-                        Glide.with(activity).load(
-                            ContextCompat.getDrawable(
-                                activity,
-                                R.drawable.ic_baseline_error
-                            )
-                        ).centerInside().into(imageViewer)
-                        Toast.makeText(activity, "Failed to Save Image", Toast.LENGTH_SHORT)
-                            .show()
-                        showUploadOptions()
-                    }
-                } else {
-                    Toast.makeText(
-                        activity,
-                        "Warning Vulgar Images are not allowed",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-
-            }
+            val f: File? = convertToFile(imageBitmap, activity)
+            continueAfterSetImage(f, activity, binding)
         }
 
         private fun checkNSFW1(
@@ -228,16 +192,8 @@ class UploadImageFragment : Fragment() {
         ): Boolean {
             if (newBMP != null) {
                 val resizedBMAP = Bitmap.createScaledBitmap(newBMP, 224, 224, true)
-                val model = NSFW.newInstance(activity)
-                val inputFeature0 =
-                    TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.UINT8)
-                val tensorBuffer = TensorImage.fromBitmap(resizedBMAP)
-                val byteBuffer = tensorBuffer.buffer
-                inputFeature0.loadBuffer(byteBuffer)
-                val outputs = model.process(inputFeature0)
-                val outputFeature0 = outputs.outputFeature0AsTensorBuffer
-                model.close()
-                val floatArray = outputFeature0.floatArray
+                val model2 = Nsfwown.newInstance(activity)
+                val floatArray = getMLResult(resizedBMAP, model2)
                 val nonsfwChance = floatArray[0]
                 val nsfwChance = floatArray[1]
                 Log.d("texts", "checkNSFW1: " + nonsfwChance + " " + nsfwChance)
@@ -245,6 +201,21 @@ class UploadImageFragment : Fragment() {
             } else {
                 return false
             }
+        }
+
+        private fun getMLResult(
+            resizedBMAP: Bitmap?,
+            model: Nsfwown
+        ): FloatArray {
+            val inputFeature0 =
+                TensorBuffer.createFixedSize(intArrayOf(1, 224, 224, 3), DataType.UINT8)
+            val tensorBuffer = TensorImage.fromBitmap(resizedBMAP)
+            val byteBuffer = tensorBuffer.buffer
+            inputFeature0.loadBuffer(byteBuffer)
+            val outputs = model.process(inputFeature0)
+            val outputFeature0 = outputs.outputFeature0AsTensorBuffer
+            model.close()
+            return outputFeature0.floatArray
         }
 
         fun addWMARK(
@@ -327,29 +298,47 @@ class UploadImageFragment : Fragment() {
 
 
         fun setImage(
-            imageBitmap: Uri,
+            imageUri: Uri,
             activity: Activity,
             binding: HomeLayoutBinding
         ) {
-            var f: File? = convertToFile(imageBitmap, activity)
-            if (f != null) {
-                val bmp = BitmapFactory.decodeFile(f.absolutePath)
+            val f: File = convertToFile(imageUri, activity)
+            continueAfterSetImage(f, activity, binding)
+        }
+
+        private fun continueAfterSetImage(
+            f: File?,
+            activity: Activity,
+            binding: HomeLayoutBinding
+        ) {
+            var f1 = f
+            if (f1 != null) {
+                val bmp = BitmapFactory.decodeFile(f1.absolutePath)
+                val imageViewer = activity.findViewById<ImageView>(R.id.image_viewer)
                 val newBMP = addWMARK(activity, bmp)
                 if (newBMP != null) {
                     val isNSFW = checkNSFW1(newBMP, activity)
-                    val imageViewer = activity.findViewById<ImageView>(R.id.image_viewer)
                     if (!isNSFW) {
-                        f = compressImage(newBMP, f)
-                        Glide.with(activity).load(f).centerInside()
-                            .into(imageViewer)
-                        showUploadButton()
-                        if (f != null) {
-                            initUpload(f, activity, binding)
+                        f1 = compressImage(newBMP, f1)
+                        if (f1 != null) {
+                            Glide.with(activity).load(f1).centerInside().into(imageViewer)
+                            showUploadButton()
+                            initUpload(f1, activity, binding)
+                        } else {
+                            Glide.with(activity).load(
+                                ContextCompat.getDrawable(
+                                    activity,
+                                    R.drawable.ic_baseline_error
+                                )
+                            ).centerInside().into(imageViewer)
+                            Toast.makeText(activity, "Failed to Save Image", Toast.LENGTH_SHORT)
+                                .show()
+                            showUploadOptions()
                         }
                     } else {
                         Toast.makeText(
                             activity,
-                            "Warning, Vulgar Posts are Not allowed",
+                            "Warning Vulgar Images are not allowed",
                             Toast.LENGTH_SHORT
                         ).show()
                     }
